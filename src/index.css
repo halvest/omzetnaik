@@ -1,0 +1,67 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Poppins:wght@600;700;800;900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --primary: #0f1f4a;
+    --accent: #ff3b3b;
+    --bg-soft: #f8fafc;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply font-sans text-[#0F1F4A] bg-white antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading tracking-tighter;
+  }
+}
+
+@layer components {
+  /* Button Primary - Lebih Rounded & Bold */
+  .btn-primary {
+    @apply bg-accent hover:bg-[#E22F2F] text-white px-10 py-4 rounded-2xl 
+           font-black text-[10px] uppercase tracking-[0.2em] transition-all 
+           duration-300 transform active:scale-95 shadow-xl shadow-red-600/20 
+           flex items-center justify-center gap-3;
+  }
+
+  /* Section Premium - Midnight Navy Theme */
+  .section-premium {
+    @apply bg-primary text-white py-16 md:py-28 relative overflow-hidden;
+  }
+
+  /* Card Styling - Mencegah kesan Jumbo */
+  .card-premium {
+    @apply bg-white border border-slate-100 rounded-[2.5rem] p-8 
+           transition-all duration-500 hover:shadow-[0_32px_64px_-16px_rgba(15,31,74,0.12)];
+  }
+}
+
+@layer utilities {
+  /* Custom Scrollbar untuk Horizontal Scroll di Mobile */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Text Shadow Halus untuk Heading di atas Background Gelap */
+  .text-shadow-sm {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+}
