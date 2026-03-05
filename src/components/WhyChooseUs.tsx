@@ -2,129 +2,124 @@
 import React from "react";
 import {
   TrendingUp,
-  ShieldCheck,
-  Zap,
-  Target,
   BarChart3,
-  Users,
+  Layers,
+  Sparkles,
+  CheckCircle2,
 } from "lucide-react";
+import { motion } from "framer-motion";
+
+const benefits = [
+  {
+    icon: <TrendingUp size={20} />,
+    title: "Berorientasi pada Hasil",
+    desc: "Nama kami adalah janji kami. Fokus utama metrik kami adalah pertumbuhan omzet Anda secara riil.",
+    tag: "ROI Focused",
+  },
+  {
+    icon: <BarChart3 size={20} />,
+    title: "Strategi Berbasis Data",
+    desc: "Setiap keputusan kampanye diambil berdasarkan analisis data yang akurat, bukan sekadar tebakan atau asumsi.",
+    tag: "Data Driven",
+  },
+  {
+    icon: <Layers size={20} />,
+    title: "Spesialisasi Niche",
+    desc: "Kami memahami luar-dalam cara memasarkan produk gaya hidup, kecantikan, properti, dan pariwisata.",
+    tag: "Market Expert",
+  },
+];
 
 export default function WhyChooseUs() {
-  const benefits = [
-    {
-      icon: <Target className="text-accent" size={24} />,
-      title: "Strategi Tepat Sasaran",
-      desc: "Kami tidak sekadar beriklan. Kami melakukan riset audiens mendalam untuk memastikan budget Anda menyasar hot-prospect.",
-    },
-    {
-      icon: <BarChart3 className="text-accent" size={24} />,
-      title: "Optimasi Berbasis Data",
-      desc: "Keputusan campaign diambil berdasarkan angka (CTR, ROAS, CPC), bukan asumsi. Kami melakukan A/B testing berkelanjutan.",
-    },
-    {
-      icon: <Zap className="text-accent" size={24} />,
-      title: "Konversi Cepat",
-      desc: "Fokus utama kami adalah 'Omzet Naik'. Setiap funnel dirancang untuk memperpendek jarak antara traffic dan closing.",
-    },
-    {
-      icon: <ShieldCheck className="text-accent" size={24} />,
-      title: "Transparansi Penuh",
-      desc: "Anda mendapatkan akses laporan real-time tanpa ada biaya tersembunyi. Kepercayaan adalah pondasi kerja sama kami.",
-    },
-  ];
-
   return (
-    <section id="why-us" className="py-20 bg-white relative overflow-hidden">
-      {/* Decorative background element */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-border to-transparent" />
+    <section
+      id="why-us"
+      className="relative py-16 lg:py-28 bg-white overflow-hidden"
+    >
+      {/* Decorative Blur - Emphasizing "Focus" */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#FF3B3B]/[0.02] rounded-full blur-[120px] -z-10" />
 
-      <div className="container mx-auto px-6 max-w-7xl">
-        <div className="flex flex-col lg:flex-row gap-16 items-center">
-          {/* Left Side: Illustration & Stats */}
-          <div className="lg:w-1/2 w-full order-2 lg:order-1">
-            <div className="grid grid-cols-2 gap-6">
-              <div className="bg-neutral-soft p-8 rounded-[2rem] border border-border hover:shadow-xl transition-all duration-300">
-                <div className="p-3 bg-white rounded-2xl w-fit shadow-sm mb-4">
-                  <TrendingUp className="text-secondary" />
+      <div className="container relative z-10 px-4 md:px-6">
+        <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
+          {/* --- SISI KIRI: THE PROMISE (Design Thinking: Empathy) --- 
+              Menampilkan 'Expertise' dalam bentuk yang lebih elegan dan tidak 'ngotak'.
+          */}
+          <div className="lg:w-1/2 w-full relative">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="relative"
+            >
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#F8FAFC] border border-slate-200 shadow-soft-premium rounded-full mb-6">
+                <Sparkles size={12} className="text-[#FF3B3B]" />
+                <span className="text-[8px] font-black text-[#0F1F4A] uppercase tracking-[0.2em]">
+                  Our Commitment
+                </span>
+              </div>
+
+              <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-[#0F1F4A] leading-[1] tracking-tighter mb-8">
+                Kami Tidak <br /> Sekadar{" "}
+                <span className="text-[#FF3B3B] italic underline decoration-[#FF3B3B]/10 underline-offset-8">
+                  Berjanji.
+                </span>
+              </h2>
+
+              <p className="text-slate-500 text-lg md:text-xl font-medium leading-relaxed max-w-lg mb-10">
+                OmzetNaik.id dirancang untuk bisnis yang siap naik kelas dengan
+                strategi yang terukur secara matematis.
+              </p>
+
+              {/* Trust Badge - Compact */}
+              <div className="flex items-center gap-4 p-6 bg-[#F8FAFC] rounded-3xl border border-slate-100 w-fit shadow-soft-premium">
+                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
+                  <CheckCircle2 className="text-[#FF3B3B]" size={20} />
                 </div>
-                <h4 className="text-3xl font-heading font-extrabold text-primary mb-1">
-                  98%
-                </h4>
-                <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">
-                  ROI Growth
-                </p>
-              </div>
-
-              <div className="bg-primary p-8 rounded-[2rem] text-white hover:shadow-xl transition-all duration-300 lg:translate-y-8">
-                <div className="p-3 bg-white/10 rounded-2xl w-fit mb-4">
-                  <Users className="text-accent" />
+                <div>
+                  <p className="text-[10px] font-black text-[#0F1F4A] uppercase tracking-widest">
+                    Client Priority
+                  </p>
+                  <p className="text-sm text-slate-500 font-bold">
+                    100% Transparency Report
+                  </p>
                 </div>
-                <h4 className="text-3xl font-heading font-extrabold mb-1">
-                  50+
-                </h4>
-                <p className="text-xs text-slate-300 font-bold uppercase tracking-wider">
-                  Happy Clients
-                </p>
               </div>
-
-              <div className="bg-white p-8 rounded-[2rem] border border-border shadow-sm hover:shadow-xl transition-all duration-300">
-                <h4 className="text-2xl font-heading font-extrabold text-primary mb-2 italic">
-                  Proven Result.
-                </h4>
-                <p className="text-sm text-slate-500 leading-relaxed">
-                  Bukan sekadar janji, tapi bukti nyata peningkatan omzet
-                  melalui digital funnel.
-                </p>
-              </div>
-
-              <div className="bg-neutral-soft p-8 rounded-[2rem] border border-border hover:shadow-xl transition-all duration-300 lg:translate-y-8">
-                <div className="flex -space-x-2 mb-4">
-                  {[1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="w-8 h-8 rounded-full border-2 border-white bg-slate-300"
-                    />
-                  ))}
-                  <div className="w-8 h-8 rounded-full border-2 border-white bg-accent flex items-center justify-center text-[10px] text-white font-bold">
-                    +12
-                  </div>
-                </div>
-                <p className="text-xs font-bold text-primary uppercase">
-                  Expert Team
-                </p>
-              </div>
-            </div>
+            </motion.div>
           </div>
 
-          {/* Right Side: Content */}
-          <div className="lg:w-1/2 order-1 lg:order-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 text-primary rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-6">
-              <ShieldCheck size={14} className="text-accent" /> Kenapa Memilih
-              Kami
-            </div>
-
-            <h2 className="text-4xl md:text-6xl font-heading font-extrabold text-primary leading-tight mb-8">
-              Partner Pertumbuhan Bisnis{" "}
-              <span className="text-accent italic">Terpercaya.</span>
-            </h2>
-
-            <div className="space-y-8">
+          {/* --- SISI KANAN: THE PILLARS (Design Thinking: Clarity) --- */}
+          <div className="lg:w-1/2 w-full">
+            <div className="grid gap-4 md:gap-6">
               {benefits.map((benefit, index) => (
-                <div key={index} className="flex gap-5 group">
-                  <div className="shrink-0 w-12 h-12 bg-neutral-soft rounded-2xl flex items-center justify-center group-hover:bg-accent group-hover:text-white transition-all duration-300">
-                    {React.cloneElement(benefit.icon as React.ReactElement, {
-                      className: "group-hover:text-white transition-colors",
-                    })}
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="group relative p-8 bg-white rounded-[2.5rem] border border-slate-100 shadow-soft-premium hover:shadow-hover-premium hover:-translate-y-1 transition-all duration-500"
+                >
+                  <div className="flex flex-col md:flex-row gap-6">
+                    {/* Icon Container */}
+                    <div className="shrink-0 w-12 h-12 bg-[#F8FAFC] rounded-2xl flex items-center justify-center group-hover:bg-[#0F1F4A] group-hover:text-white transition-all duration-500">
+                      {benefit.icon}
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <h4 className="text-xl font-black text-[#0F1F4A] group-hover:text-[#FF3B3B] transition-colors">
+                          {benefit.title}
+                        </h4>
+                        <span className="text-[7px] font-black px-2 py-0.5 bg-slate-100 text-slate-400 rounded-md uppercase tracking-tighter">
+                          {benefit.tag}
+                        </span>
+                      </div>
+                      <p className="text-slate-500 text-sm leading-relaxed font-medium opacity-90">
+                        {benefit.desc}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-heading font-bold text-primary mb-1 group-hover:text-secondary transition-colors">
-                      {benefit.title}
-                    </h3>
-                    <p className="text-slate-500 text-sm leading-relaxed">
-                      {benefit.desc}
-                    </p>
-                  </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
