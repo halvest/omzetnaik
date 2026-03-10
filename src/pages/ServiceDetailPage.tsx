@@ -14,16 +14,18 @@ import {
   Briefcase,
   ShieldCheck,
   TrendingUp,
+  Sparkles,
+  ArrowRight,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet-async";
 
 const iconMap: { [key: string]: React.ReactNode } = {
-  Ads: <BarChart3 className="text-[#FF3B3B]" size={32} />,
-  SEO: <Search className="text-[#FF3B3B]" size={32} />,
-  Web: <Briefcase className="text-[#FF3B3B]" size={32} />,
-  Property: <Users className="text-[#FF3B3B]" size={32} />,
-  Default: <Zap className="text-[#FF3B3B]" size={32} />,
+  Ads: <BarChart3 className="text-accent" size={32} />,
+  SEO: <Search className="text-accent" size={32} />,
+  Web: <Briefcase className="text-accent" size={32} />,
+  Property: <Users className="text-accent" size={32} />,
+  Default: <Zap className="text-accent" size={32} />,
 };
 
 export default function ServiceDetailPage() {
@@ -58,117 +60,154 @@ export default function ServiceDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-        <Loader2 className="animate-spin text-[#FF3B3B] mb-4" size={40} />
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
-          Menyiapkan Penawaran...
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white font-sans">
+        <Loader2 className="animate-spin text-accent mb-4" size={40} />
+        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">
+          Syncing Strategic Offer...
         </p>
       </div>
     );
   }
 
-  const waMessage = `Halo OmzetNaik.id, saya ingin konsultasi mengenai Jasa ${service.title}. Bagaimana prosedur kerjanya?`;
+  const waMessage = `Halo OmzetNaik.id, saya tertarik dengan layanan ${service.title}. Boleh minta detail prosedur dan konsultasi strateginya?`;
   const waLink = `https://wa.me/628123456789?text=${encodeURIComponent(waMessage)}`;
 
   return (
-    <div className="bg-[#F8FAFC] min-h-screen font-sans pb-20">
+    <div className="bg-slate-50 min-h-screen font-sans pb-24">
       <Helmet>
-        <title>Jasa {service.title} Terbaik & Terukur | OmzetNaik.id</title>
+        <title>{service.title} | Strategi Pertumbuhan OmzetNaik.id</title>
         <meta
           name="description"
-          content={`Tingkatkan profit bisnis Anda dengan jasa ${service.title.toLowerCase()} dari OmzetNaik.id. Strategi berbasis data untuk hasil yang nyata.`}
+          content={`Optimalkan ${service.title} Anda bersama OmzetNaik.id. Layanan premium dengan fokus pada ROI dan pertumbuhan bisnis nyata.`}
         />
       </Helmet>
 
-      {/* --- STICKY HEADER NAV --- */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-100">
-        <div className="container mx-auto px-6 h-20 flex items-center justify-between">
+      {/* --- PREMIUM STICKY NAV --- */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100 shadow-sm">
+        <div className="container h-20 flex items-center justify-between">
           <Link
             to="/"
-            className="flex items-center gap-2 text-slate-400 hover:text-[#0F1F4A] transition-colors group"
+            className="flex items-center gap-2 text-slate-400 hover:text-primary transition-all group font-bold text-[10px] uppercase tracking-[0.2em]"
           >
             <ArrowLeft
-              size={18}
+              size={16}
               className="group-hover:-translate-x-1 transition-transform"
             />
-            <span className="text-[10px] font-black uppercase tracking-widest">
-              Back
-            </span>
+            Back
           </Link>
-          <div className="hidden md:flex items-center gap-3">
-            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#0F1F4A]">
-              Available for Project
+
+          <div className="hidden lg:flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+              <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
+                Available for Q1 2026
+              </span>
+            </div>
+            <div className="h-4 w-px bg-slate-200" />
+            <p className="text-[11px] font-bold text-primary truncate max-w-[200px] uppercase">
+              {service.title}
             </p>
           </div>
+
           <a
             href={waLink}
             target="_blank"
-            className="px-6 py-2.5 bg-[#0F1F4A] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:bg-[#FF3B3B] transition-all"
+            className="btn-primary !px-6 !py-2.5 !text-[10px] shadow-accent-glow"
           >
-            Konsultasi Gratis
+            Start Consult
           </a>
         </div>
       </nav>
 
-      <main className="pt-32 container mx-auto px-6 max-w-5xl">
+      <main className="pt-32 container max-w-6xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-10"
+          transition={{ duration: 0.6, ease: [0.2, 0, 0, 1] }}
+          className="space-y-12"
         >
-          {/* --- HERO SECTION --- */}
-          <div className="text-center space-y-6">
-            <div className="inline-flex w-20 h-20 rounded-[2rem] bg-white shadow-2xl shadow-primary/5 items-center justify-center mx-auto border border-slate-50">
-              {iconMap[service.category] || iconMap.Default}
+          {/* --- HERO HEADER --- */}
+          <div className="text-center space-y-8">
+            <div className="relative inline-flex">
+              <div className="absolute inset-0 bg-accent/20 blur-2xl rounded-full scale-150 opacity-30" />
+              <div className="relative w-24 h-24 rounded-[2.5rem] bg-white shadow-premium flex items-center justify-center border border-slate-50">
+                {iconMap[service.category] || iconMap.Default}
+              </div>
             </div>
-            <div className="space-y-3">
-              <span className="px-4 py-1.5 bg-[#FF3B3B]/5 text-[#FF3B3B] text-[10px] font-black rounded-full uppercase tracking-widest border border-[#FF3B3B]/10">
-                Premium Jasa {service.category}
-              </span>
-              <h1 className="text-4xl md:text-6xl font-heading font-black text-[#0F1F4A] leading-[1.1] tracking-tighter max-w-3xl mx-auto">
+
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-accent/5 text-accent text-[10px] font-bold rounded-full uppercase tracking-[0.25em] border border-accent/10">
+                <Sparkles size={12} /> Excellence in {service.category}
+              </div>
+              <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-primary leading-[0.95] tracking-tighter max-w-4xl mx-auto">
                 {service.title}
               </h1>
             </div>
-            <p className="text-lg text-slate-500 leading-relaxed max-w-2xl mx-auto font-medium">
+
+            <p className="text-xl lg:text-2xl text-slate-500 leading-relaxed max-w-3xl mx-auto font-medium tracking-tight">
               Solusi strategi marketing presisi yang dirancang khusus untuk
-              mengonversi target audiens menjadi <strong>Omzet Nyata</strong>{" "}
-              bagi bisnis Anda.
+              mengonversi target audiens menjadi{" "}
+              <span className="text-primary font-bold">Profit Terukur.</span>
             </p>
           </div>
 
-          {/* --- PRICING & CTA CARD --- */}
-          <div className="bg-[#0F1F4A] rounded-[3.5rem] p-10 md:p-16 text-white relative overflow-hidden shadow-2xl shadow-primary/20 border border-white/5">
-            <TrendingUp className="absolute -right-10 -bottom-10 w-64 h-64 text-white/[0.03] -rotate-12" />
-            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-10">
-              <div className="text-center lg:text-left">
-                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#FF3B3B] mb-4">
-                  Investasi Strategis
-                </p>
-                <h3 className="text-5xl md:text-6xl font-heading font-black tracking-tighter">
-                  <span className="text-2xl align-top mr-1 font-bold text-slate-400">
-                    Rp
-                  </span>
-                  {service.price_start?.toLocaleString("id-ID")}
-                  <span className="text-lg text-slate-400 font-bold">++</span>
-                </h3>
-                <p className="text-slate-400 text-xs mt-4 font-medium italic">
-                  *Harga menyesuaikan skala campaign dan target ROAS.
+          {/* --- CONVERSION & PRICING BOX --- */}
+          <div className="bg-primary rounded-[bento] p-10 md:p-20 text-white relative overflow-hidden shadow-premium group">
+            {/* Background Decor */}
+            <div className="absolute -right-20 -bottom-20 w-96 h-96 bg-accent/10 rounded-full blur-[100px] transition-transform duration-1000 group-hover:scale-125" />
+            <TrendingUp className="absolute right-10 top-10 w-64 h-64 text-white/[0.02] -rotate-12 pointer-events-none" />
+
+            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
+              <div className="text-center lg:text-left space-y-6">
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-accent mb-4">
+                    Strategic Investment
+                  </p>
+                  <h3 className="text-6xl md:text-8xl font-bold tracking-tighter flex items-start justify-center lg:justify-start">
+                    <span className="text-3xl mt-2 mr-2 text-slate-400">
+                      Rp
+                    </span>
+                    {service.price_start?.toLocaleString("id-ID")}
+                    <span className="text-2xl text-accent ml-2">++</span>
+                  </h3>
+                </div>
+                <div className="flex items-center gap-3 justify-center lg:justify-start">
+                  <div className="px-3 py-1 bg-white/10 rounded-lg border border-white/10 text-[10px] font-bold uppercase">
+                    Monthly Retainer
+                  </div>
+                  <div className="px-3 py-1 bg-white/10 rounded-lg border border-white/10 text-[10px] font-bold uppercase">
+                    Performance Based
+                  </div>
+                </div>
+                <p className="text-slate-400 text-xs font-medium italic opacity-70">
+                  *Valuasi akhir menyesuaikan kompleksitas campaign & target
+                  KPI.
                 </p>
               </div>
-              <div className="flex flex-col gap-4 w-full lg:w-auto">
+
+              <div className="flex flex-col gap-6 w-full lg:w-96">
                 <a
                   href={waLink}
                   target="_blank"
-                  className="w-full lg:px-12 py-5 bg-[#FF3B3B] text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-3"
+                  className="btn-primary !py-6 !text-sm shadow-accent-glow flex items-center justify-center gap-4 active:scale-95 group/btn"
                 >
-                  <MessageSquare size={18} /> Ambil Penawaran Ini
+                  <MessageSquare size={20} /> Lock This Strategy
+                  <ArrowRight
+                    size={18}
+                    className="group-hover/btn:translate-x-1 transition-transform"
+                  />
                 </a>
-                <div className="flex items-center justify-center gap-4 text-slate-400">
-                  <div className="flex items-center gap-1.5">
-                    <ShieldCheck size={14} className="text-emerald-500" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">
-                      Guaranteed Service
+                <div className="flex items-center justify-center gap-6 border-t border-white/10 pt-6">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck size={16} className="text-emerald-400" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">
+                      Certified Agency
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Zap size={16} className="text-accent" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">
+                      High ROAS Focus
                     </span>
                   </div>
                 </div>
@@ -176,80 +215,99 @@ export default function ServiceDetailPage() {
             </div>
           </div>
 
-          {/* --- DETAILS GRID --- */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-            {/* Benefits List */}
-            <div className="md:col-span-7 bg-white p-8 md:p-12 rounded-[3rem] border border-slate-100 shadow-sm space-y-8">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#FF3B3B]/10 flex items-center justify-center">
-                  <Zap size={20} className="text-[#FF3B3B]" />
-                </div>
-                <h4 className="text-xl font-heading font-black text-[#0F1F4A] tracking-tight">
-                  Apa yang Anda Dapatkan?
+          {/* --- CONTENT ARCHITECTURE --- */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            {/* Value Proposition */}
+            <div className="lg:col-span-7 bg-white p-10 md:p-16 rounded-[bento] border border-slate-100 shadow-premium space-y-12">
+              <div className="space-y-2">
+                <h4 className="text-2xl font-bold text-primary tracking-tight flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-accent/5 flex items-center justify-center text-accent">
+                    <Zap size={24} />
+                  </div>
+                  Core Deliverables
                 </h4>
+                <p className="text-slate-400 text-sm font-medium ml-16">
+                  Itemized value yang akan Anda dapatkan dalam paket ini.
+                </p>
               </div>
-              <div className="grid grid-cols-1 gap-5">
+
+              <div className="grid grid-cols-1 gap-6 ml-4">
                 {service.benefit_list?.map((benefit: string, idx: number) => (
-                  <div key={idx} className="flex items-start gap-4 group">
-                    <div className="mt-1 w-6 h-6 rounded-full bg-emerald-50 flex items-center justify-center shrink-0 group-hover:bg-emerald-500 transition-colors duration-300">
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                    key={idx}
+                    className="flex items-start gap-5 group"
+                  >
+                    <div className="mt-1 w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-500 shadow-sm border border-slate-100">
                       <CheckCircle2
-                        size={14}
+                        size={16}
                         className="text-emerald-500 group-hover:text-white transition-colors"
                       />
                     </div>
-                    <span className="text-slate-600 font-bold text-base leading-snug">
+                    <span className="text-slate-600 font-bold text-lg leading-snug tracking-tight pt-1">
                       {benefit}
                     </span>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </div>
 
-            {/* Side Branding */}
-            <div className="md:col-span-5 flex flex-col gap-6">
-              <div className="bg-[#F1F5F9] p-10 rounded-[3rem] space-y-6 flex-1 flex flex-col justify-center">
-                <h4 className="text-sm font-black uppercase tracking-widest text-[#0F1F4A]">
-                  Why OmzetNaik.id?
+            {/* Credibility Sidebar */}
+            <div className="lg:col-span-5 space-y-8">
+              <div className="bg-white p-12 rounded-[bento] border border-slate-100 shadow-premium space-y-8 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1.5 h-full bg-accent opacity-20" />
+                <h4 className="text-[11px] font-bold uppercase tracking-[0.3em] text-primary">
+                  Trust Mechanism
                 </h4>
-                <p className="text-sm text-slate-500 leading-relaxed font-medium">
-                  Setiap pengerjaan{" "}
-                  <strong>jasa {service.category.toLowerCase()}</strong>{" "}
-                  dilakukan oleh tim spesialis bersertifikat. Kami fokus pada
-                  angka akhir: <strong>Profit & Growth</strong>, bukan sekadar
-                  vanity metrics.
+                <p className="text-base text-slate-500 leading-relaxed font-medium">
+                  Setiap pengerjaan pilar{" "}
+                  <span className="text-primary font-bold">
+                    Jasa {service.category}
+                  </span>{" "}
+                  dilakukan oleh spesialis tersertifikasi. Kami tidak
+                  menggunakan sistem "one size fits all", melainkan strategi
+                  bespoke yang adaptif.
                 </p>
-                <div className="pt-4 flex items-center gap-4">
-                  <div className="flex -space-x-3">
-                    {[1, 2, 3].map((i) => (
-                      <div
-                        key={i}
-                        className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 overflow-hidden shadow-sm"
-                      >
+
+                <div className="pt-6 flex flex-col gap-6">
+                  <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div className="flex -space-x-3">
+                      {[1, 2, 3, 4].map((i) => (
                         <img
-                          src={`https://i.pravatar.cc/100?img=${i + 40}`}
+                          key={i}
+                          className="w-10 h-10 rounded-full border-2 border-white shadow-sm ring-1 ring-slate-100"
+                          src={`https://i.pravatar.cc/100?img=${i + 20}`}
                           alt="client"
                         />
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                    <p className="text-[10px] font-bold uppercase text-slate-400 tracking-tighter leading-tight">
+                      Trusted by <br />{" "}
+                      <span className="text-primary font-black">
+                        50+ Corporate Partners
+                      </span>
+                    </p>
                   </div>
-                  <p className="text-[10px] font-black uppercase text-slate-400 tracking-tighter">
-                    Success with 50+ Partners
-                  </p>
-                </div>
-              </div>
 
-              {/* Micro CTA Box */}
-              <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 flex items-center justify-between group cursor-pointer hover:border-[#FF3B3B] transition-all">
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    Butuh Custom Paket?
-                  </p>
-                  <p className="text-sm font-black text-[#0F1F4A]">
-                    Hubungi Team Ahli Kami
-                  </p>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-[#FF3B3B] group-hover:text-white transition-all">
-                  <ArrowLeft className="rotate-180" size={18} />
+                  <div className="bg-primary p-8 rounded-3xl text-white relative group cursor-pointer hover:shadow-accent-glow transition-all duration-500">
+                    <p className="text-[9px] font-bold text-accent uppercase tracking-widest mb-2">
+                      Need Custom Quote?
+                    </p>
+                    <p className="text-sm font-bold leading-snug mb-6">
+                      Diskusikan kebutuhan spesifik bisnis Anda dengan
+                      Consultant kami.
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold uppercase underline underline-offset-4">
+                        Connect Now
+                      </span>
+                      <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-accent transition-colors">
+                        <ArrowRight size={18} />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { supabase } from "../utils/supabase";
 import {
   Plus,
-  Edit,
+  Edit3,
   Trash2,
   CheckCircle2,
   XCircle,
@@ -11,6 +11,8 @@ import {
   Tag,
   BarChart3,
   Search,
+  LayoutGrid,
+  Zap,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,8 +22,6 @@ export default function AdminServicesManager() {
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-
-  // State untuk Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingService, setEditingService] = useState<any | null>(null);
 
@@ -41,7 +41,7 @@ export default function AdminServicesManager() {
       if (error) throw error;
       setServices(data || []);
     } catch (error: any) {
-      toast.error("Gagal mengambil data layanan: " + error.message);
+      toast.error("Gagal sinkronisasi data layanan");
     } finally {
       setLoading(false);
     }
@@ -60,7 +60,6 @@ export default function AdminServicesManager() {
         .eq("id", id);
 
       if (error) throw error;
-
       toast.success(
         `Layanan ${!currentStatus ? "diaktifkan" : "dinonaktifkan"}`,
       );
@@ -70,106 +69,109 @@ export default function AdminServicesManager() {
         ),
       );
     } catch (error: any) {
-      toast.error("Gagal memperbarui status");
+      toast.error("Gagal memperbarui status operasional");
     }
   };
 
   const handleDelete = async (id: string, title: string) => {
     if (
-      !confirm(`Hapus layanan "${title}"? Data ini tidak dapat dikembalikan.`)
+      !confirm(`Hapus layanan "${title}"? Langkah ini tidak dapat dibatalkan.`)
     )
       return;
-
     try {
       const { error } = await supabase.from("services").delete().eq("id", id);
       if (error) throw error;
-
-      toast.success("Layanan berhasil dihapus");
+      toast.success("Layanan berhasil dihapus dari katalog");
       setServices((prev) => prev.filter((s) => s.id !== id));
     } catch (error: any) {
       toast.error("Gagal menghapus layanan");
     }
   };
 
-  const openAddModal = () => {
-    setEditingService(null);
-    setIsModalOpen(true);
-  };
-
-  const openEditModal = (service: any) => {
-    setEditingService(service);
-    setIsModalOpen(true);
-  };
-
   return (
-    <div className="space-y-8 pb-10">
-      {/* --- HEADER --- */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="space-y-10 pb-20 font-sans">
+      {/* --- HEADER SECTION --- */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-heading font-extrabold text-[#0F1F4A] tracking-tighter">
-            Layanan <span className="text-[#FF3B3B]">Agency</span>
+          <h1 className="text-4xl font-bold text-primary tracking-tighter uppercase">
+            Service <span className="text-accent italic">Catalog.</span>
           </h1>
-          <p className="text-slate-500 text-sm font-sans mt-1">
-            Kelola paket strategi dan optimasi OmzetNaik.id
+          <p className="text-slate-500 font-medium mt-1">
+            Kelola paket strategi digital dan optimasi konversi OmzetNaik.id
           </p>
         </div>
         <button
-          onClick={openAddModal}
-          className="flex items-center gap-2 px-6 py-3 bg-[#0F1F4A] text-white rounded-2xl font-bold text-sm shadow-xl shadow-primary/20 hover:bg-black transition-all active:scale-95"
+          onClick={() => {
+            setEditingService(null);
+            setIsModalOpen(true);
+          }}
+          className="btn-primary !w-full md:!w-auto flex items-center justify-center gap-3 shadow-accent-glow active:scale-95"
         >
-          <Plus size={20} className="text-[#FF3B3B]" /> Tambah Layanan Baru
+          <Plus size={20} /> Tambah Layanan Baru
         </button>
       </div>
 
-      {/* --- SEARCH BAR --- */}
-      <div className="relative max-w-md group">
-        <Search
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#FF3B3B] transition-colors"
-          size={18}
-        />
-        <input
-          type="text"
-          placeholder="Cari nama layanan..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-12 pr-4 py-4 bg-white border border-slate-100 rounded-2xl shadow-sm outline-none focus:ring-2 focus:ring-[#0F1F4A]/5 transition-all font-medium"
-        />
+      {/* --- SUMMARY & SEARCH BAR --- */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        <div className="lg:col-span-8 relative group">
+          <Search
+            className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-accent transition-colors"
+            size={18}
+          />
+          <input
+            type="text"
+            placeholder="Cari spesialisasi atau paket jasa..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-14 pr-6 py-4 bg-white border border-slate-100 rounded-2xl shadow-sm outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all font-medium text-slate-700"
+          />
+        </div>
+        <div className="lg:col-span-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between px-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-accent/5 rounded-lg text-accent">
+              <Zap size={18} />
+            </div>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              Active Services
+            </span>
+          </div>
+          <span className="text-lg font-bold text-primary">
+            {services.filter((s) => s.is_active).length} / {services.length}
+          </span>
+        </div>
       </div>
 
-      {/* --- TABLE CONTAINER --- */}
-      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-primary/5 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left font-sans">
-            <thead className="bg-[#F5F7FB] border-b border-slate-100">
-              <tr>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                  Layanan
+      {/* --- DATA TABLE --- */}
+      <div className="bg-white rounded-[bento] border border-slate-100 shadow-premium overflow-hidden">
+        <div className="overflow-x-auto no-scrollbar">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50/50 border-b border-slate-100">
+                <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                  Service Offering
                 </th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                  Kategori
+                <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                  Category Tag
                 </th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                  Mulai Dari
+                <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                  Base Valuation
                 </th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                  Status
+                <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                  System Status
                 </th>
-                <th className="px-8 py-5 text-right text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                  Aksi
+                <th className="px-8 py-5 text-right text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                  Actions
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {loading && services.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-20">
-                    <div className="flex flex-col items-center justify-center text-slate-400 gap-3">
-                      <Loader2
-                        className="animate-spin text-[#FF3B3B]"
-                        size={32}
-                      />
-                      <p className="font-bold uppercase tracking-widest text-[10px]">
-                        Menyinkronkan Layanan...
+                  <td colSpan={5} className="py-32">
+                    <div className="flex flex-col items-center justify-center gap-4">
+                      <Loader2 className="animate-spin text-accent" size={32} />
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        Updating Catalog...
                       </p>
                     </div>
                   </td>
@@ -178,65 +180,67 @@ export default function AdminServicesManager() {
                 services.map((s) => (
                   <tr
                     key={s.id}
-                    className="hover:bg-[#F5F7FB]/50 transition-colors group"
+                    className="group hover:bg-slate-50/80 transition-colors"
                   >
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-[#0F1F4A]">
+                        <div className="w-12 h-12 rounded-xl bg-slate-100 overflow-hidden flex items-center justify-center border border-slate-200 group-hover:border-primary/20 transition-all shadow-sm">
                           {s.image_url ? (
                             <img
                               src={s.image_url}
-                              className="w-full h-full object-cover rounded-xl"
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                               alt=""
                             />
                           ) : (
-                            <BarChart3 size={18} />
+                            <BarChart3 size={20} className="text-slate-400" />
                           )}
                         </div>
-                        <span className="font-bold text-[#0F1F4A]">
+                        <span className="font-bold text-primary text-base tracking-tight">
                           {s.title}
                         </span>
                       </div>
                     </td>
                     <td className="px-8 py-6">
-                      <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
-                        <Tag size={14} className="text-slate-300" />
-                        {s.category}
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-500 text-[10px] font-bold rounded-full uppercase tracking-wider border border-slate-200/50">
+                        <Tag size={12} className="text-accent" /> {s.category}
                       </span>
                     </td>
-                    <td className="px-8 py-6 font-bold text-[#0F1F4A] text-sm">
-                      Rp {s.price_start?.toLocaleString("id-ID")}
+                    <td className="px-8 py-6">
+                      <p className="font-bold text-primary text-sm tracking-tight">
+                        Rp {s.price_start?.toLocaleString("id-ID")}
+                      </p>
                     </td>
                     <td className="px-8 py-6">
                       <button
                         onClick={() => toggleStatus(s.id, s.is_active)}
-                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black tracking-widest transition-all ${
+                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-[0.1em] transition-all hover:ring-2 hover:ring-slate-100 ${
                           s.is_active
-                            ? "bg-emerald-50 text-emerald-600"
+                            ? "bg-emerald-50 text-emerald-600 shadow-sm"
                             : "bg-slate-100 text-slate-400"
                         }`}
                       >
-                        {s.is_active ? (
-                          <CheckCircle2 size={12} />
-                        ) : (
-                          <XCircle size={12} />
-                        )}
-                        {s.is_active ? "AKTIF" : "OFF"}
+                        <div
+                          className={`w-1.5 h-1.5 rounded-full ${s.is_active ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`}
+                        />
+                        {s.is_active ? "OPERATIONAL" : "ARCHIVED"}
                       </button>
                     </td>
                     <td className="px-8 py-6 text-right">
-                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
                         <button
-                          onClick={() => openEditModal(s)}
-                          className="p-2 text-slate-400 hover:text-[#0F1F4A] hover:bg-slate-50 rounded-xl transition-all"
+                          onClick={() => {
+                            setEditingService(s);
+                            setIsModalOpen(true);
+                          }}
+                          className="p-2.5 bg-slate-100 text-primary rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm"
                         >
-                          <Edit size={18} />
+                          <Edit3 size={16} />
                         </button>
                         <button
                           onClick={() => handleDelete(s.id, s.title)}
-                          className="p-2 text-slate-400 hover:text-[#FF3B3B] hover:bg-rose-50 rounded-xl transition-all"
+                          className="p-2.5 bg-rose-50 text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-sm border border-rose-100"
                         >
-                          <Trash2 size={18} />
+                          <Trash2 size={16} />
                         </button>
                       </div>
                     </td>
@@ -246,9 +250,9 @@ export default function AdminServicesManager() {
                 <tr>
                   <td
                     colSpan={5}
-                    className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-xs"
+                    className="py-32 text-center text-slate-400 font-bold uppercase tracking-widest text-xs"
                   >
-                    Tidak ada layanan ditemukan.
+                    No services active in the terminal.
                   </td>
                 </tr>
               )}

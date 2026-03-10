@@ -9,21 +9,19 @@ import {
   MessageSquare,
   Sparkles,
   TrendingUp,
+  ArrowRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Interface untuk opsi layanan agensi
 interface ServiceOption {
   id: string;
   title: string;
 }
 
-// Interface Data Form sesuai skema tabel 'leads' terbaru
 interface ConsultationFormData {
   name: string;
   phone: string;
   email: string;
-  domicile: string;
   service_id: string;
   message: string;
 }
@@ -39,7 +37,6 @@ export default function ConsultationForm() {
     formState: { errors },
   } = useForm<ConsultationFormData>();
 
-  // Ambil data layanan untuk dropdown
   useEffect(() => {
     const fetchServices = async () => {
       const { data, error } = await supabase
@@ -55,17 +52,14 @@ export default function ConsultationForm() {
 
   const onSubmit = async (formData: ConsultationFormData) => {
     setIsSubmitting(true);
-
-    // Menangkap parameter UTM untuk kebutuhan agensi marketing
     const urlParams = new URLSearchParams(window.location.search);
 
     const { error } = await supabase.from("leads").insert([
       {
-        type: "service", // Menandai prospek kategori agensi
+        type: "service",
         name: formData.name,
         phone: formData.phone,
         email: formData.email,
-        domicile: formData.domisili,
         service_id: formData.service_id,
         message: formData.message,
         status: "new",
@@ -80,7 +74,6 @@ export default function ConsultationForm() {
       alert(
         "Maaf, terjadi kesalahan. Silakan coba lagi atau hubungi via WhatsApp.",
       );
-      console.error("Error submitting lead:", error);
       setIsSubmitting(false);
     } else {
       setIsSuccess(true);
@@ -90,33 +83,45 @@ export default function ConsultationForm() {
   return (
     <section
       id="contact"
-      className="py-20 md:py-32 bg-neutral-soft relative overflow-hidden"
+      className="py-24 lg:py-40 bg-slate-50 relative overflow-hidden font-sans"
     >
-      <div className="container mx-auto px-6 relative z-10">
+      {/* Background Decor */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px] -z-0" />
+
+      <div className="container relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="bg-white rounded-[3rem] shadow-2xl shadow-primary/5 border border-border max-w-5xl mx-auto overflow-hidden flex flex-col md:flex-row"
+          transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
+          className="bg-white rounded-[bento] shadow-premium border border-slate-100 max-w-6xl mx-auto overflow-hidden flex flex-col lg:flex-row"
         >
-          {/* Kolom Kiri: Branding Agensi */}
-          <div className="hidden md:flex flex-col justify-between w-2/5 bg-primary p-12 text-white relative">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-accent/20 rounded-full blur-3xl" />
+          {/* LEFT COLUMN: Branding & Trust */}
+          <div className="lg:w-[40%] bg-primary p-10 lg:p-16 text-white relative flex flex-col justify-between overflow-hidden">
+            {/* Ambient Glow */}
+            <div className="absolute -top-20 -right-20 w-64 h-64 bg-accent/20 rounded-full blur-[80px]" />
 
             <div className="relative z-10">
-              <div className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-8">
-                <MessageSquare size={28} className="text-accent" />
-              </div>
-              <h3 className="text-3xl font-heading font-extrabold mb-4 leading-tight">
-                Konsultasi <br /> Strategi Gratis
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                className="w-16 h-16 bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center mb-10 shadow-xl"
+              >
+                <MessageSquare size={32} className="text-accent" />
+              </motion.div>
+
+              <h3 className="text-4xl lg:text-5xl font-bold mb-6 leading-[1.1] tracking-tighter">
+                Konsultasi <br /> Strategi{" "}
+                <span className="text-accent italic">Gratis.</span>
               </h3>
-              <p className="text-slate-300 text-sm leading-relaxed mb-8">
+
+              <p className="text-slate-400 text-lg leading-relaxed mb-10 font-medium">
                 Diskusikan tantangan bisnis Anda dengan pakar performance
-                marketing kami. Dapatkan analisis gratis untuk meningkatkan
+                marketing kami. Dapatkan analisis strategis untuk meroketkan
                 omzet Anda.
               </p>
 
-              <ul className="space-y-4">
+              <ul className="space-y-5">
                 {[
                   "Analisis ROI Campaign",
                   "Audit Landing Page",
@@ -124,51 +129,65 @@ export default function ConsultationForm() {
                 ].map((item, i) => (
                   <li
                     key={i}
-                    className="flex items-center gap-3 text-sm font-medium"
+                    className="flex items-center gap-4 text-sm font-semibold tracking-wide text-slate-200"
                   >
-                    <Sparkles size={16} className="text-accent" /> {item}
+                    <div className="p-1 bg-accent/20 rounded-full">
+                      <Sparkles size={14} className="text-accent" />
+                    </div>
+                    {item}
                   </li>
                 ))}
               </ul>
             </div>
 
-            <div className="relative z-10 pt-8 mt-auto border-t border-white/10">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-500/20 rounded-lg">
-                  <TrendingUp size={20} className="text-green-400" />
+            <div className="relative z-10 pt-10 mt-16 border-t border-white/10">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-emerald-500/10 rounded-xl shadow-accent-glow">
+                  <TrendingUp size={24} className="text-emerald-400" />
                 </div>
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
-                  Ready to scale up?
-                </p>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-1">
+                    Status
+                  </p>
+                  <p className="text-sm font-bold text-white">
+                    Ready to scale your business?
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Kolom Kanan: Form */}
-          <div className="w-full md:w-3/5 p-8 md:p-14">
+          {/* RIGHT COLUMN: Form */}
+          <div className="lg:w-[60%] p-10 lg:p-20 relative bg-white">
             <AnimatePresence mode="wait">
               {isSuccess ? (
                 <motion.div
                   key="success"
-                  initial={{ opacity: 0, scale: 0.9 }}
+                  initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
                   className="flex flex-col justify-center items-center h-full text-center py-10"
                 >
-                  <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6">
-                    <CheckCircle2 size={40} />
+                  <div className="w-24 h-24 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-8 shadow-sm">
+                    <CheckCircle2 size={48} strokeWidth={2.5} />
                   </div>
-                  <h3 className="text-2xl font-heading font-bold text-primary mb-2">
+                  <h3 className="text-3xl font-bold text-primary mb-4 tracking-tight">
                     Permintaan Terkirim!
                   </h3>
-                  <p className="text-slate-500 mb-8 max-w-xs mx-auto">
+                  <p className="text-slate-500 text-lg mb-10 max-w-sm mx-auto leading-relaxed">
                     Tim ahli kami akan menghubungi Anda melalui WhatsApp dalam
-                    waktu maksimal 1x24 jam.
+                    waktu maksimal{" "}
+                    <span className="text-primary font-bold">1x24 jam.</span>
                   </p>
                   <button
                     onClick={() => setIsSuccess(false)}
-                    className="text-accent font-bold hover:underline"
+                    className="text-accent font-bold hover:text-primary transition-colors flex items-center gap-2 group"
                   >
-                    Kirim Pesan Lain
+                    Kirim Pesan Lain{" "}
+                    <ArrowRight
+                      size={18}
+                      className="group-hover:translate-x-1 transition-transform"
+                    />
                   </button>
                 </motion.div>
               ) : (
@@ -176,100 +195,100 @@ export default function ConsultationForm() {
                   key="form"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                 >
-                  <div className="mb-10">
-                    <h2 className="text-3xl font-heading font-bold text-primary mb-2">
+                  <div className="mb-12">
+                    <h2 className="text-4xl font-bold text-primary mb-4 tracking-tighter">
                       Mulai Sekarang
                     </h2>
-                    <p className="text-slate-500">
-                      Lengkapi data di bawah untuk menjadwalkan sesi
-                      brainstorming.
+                    <p className="text-slate-500 text-lg font-medium">
+                      Lengkapi data untuk menjadwalkan sesi brainstorming
+                      eksklusif.
                     </p>
                   </div>
 
-                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-3">
+                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">
                           Nama Lengkap
                         </label>
                         <input
-                          {...register("name", {
-                            required: "Nama wajib diisi",
-                          })}
-                          className="w-full px-5 py-4 bg-neutral-soft border border-border rounded-2xl focus:ring-2 focus:ring-primary focus:bg-white outline-none transition-all"
+                          {...register("name", { required: true })}
+                          className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary/5 focus:border-primary focus:bg-white outline-none transition-all duration-300 font-medium"
                           placeholder="John Doe"
                         />
                       </div>
-                      <div>
-                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                      <div className="space-y-3">
+                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">
                           Email Bisnis
                         </label>
                         <input
-                          {...register("email", {
-                            required: "Email wajib diisi",
-                          })}
-                          className="w-full px-5 py-4 bg-neutral-soft border border-border rounded-2xl focus:ring-2 focus:ring-primary focus:bg-white outline-none transition-all"
+                          {...register("email", { required: true })}
+                          className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary/5 focus:border-primary focus:bg-white outline-none transition-all duration-300 font-medium"
                           placeholder="email@bisnis.com"
                         />
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-3">
+                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">
                           No. WhatsApp
                         </label>
                         <input
                           type="tel"
-                          {...register("phone", {
-                            required: "No. WA wajib diisi",
-                          })}
-                          className="w-full px-5 py-4 bg-neutral-soft border border-border rounded-2xl focus:ring-2 focus:ring-primary focus:bg-white outline-none transition-all"
+                          {...register("phone", { required: true })}
+                          className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary/5 focus:border-primary focus:bg-white outline-none transition-all duration-300 font-medium"
                           placeholder="0812..."
                         />
                       </div>
-                      <div>
-                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                      <div className="space-y-3">
+                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">
                           Layanan Diminati
                         </label>
-                        <select
-                          {...register("service_id", {
-                            required: "Pilih layanan",
-                          })}
-                          className="w-full px-5 py-4 bg-neutral-soft border border-border rounded-2xl focus:ring-2 focus:ring-primary focus:bg-white outline-none appearance-none cursor-pointer transition-all"
-                        >
-                          <option value="">Pilih Jasa...</option>
-                          {services.map((s) => (
-                            <option key={s.id} value={s.id}>
-                              {s.title}
-                            </option>
-                          ))}
-                        </select>
+                        <div className="relative">
+                          <select
+                            {...register("service_id", { required: true })}
+                            className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary/5 focus:border-primary focus:bg-white outline-none appearance-none cursor-pointer transition-all duration-300 font-medium"
+                          >
+                            <option value="">Pilih Jasa...</option>
+                            {services.map((s) => (
+                              <option key={s.id} value={s.id}>
+                                {s.title}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                            <ArrowRight size={18} className="rotate-90" />
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                    <div className="space-y-3">
+                      <label className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">
                         Tantangan Bisnis Anda
                       </label>
                       <textarea
                         {...register("message")}
-                        rows={3}
-                        className="w-full px-5 py-4 bg-neutral-soft border border-border rounded-2xl focus:ring-2 focus:ring-primary focus:bg-white outline-none resize-none transition-all"
-                        placeholder="Ceritakan sedikit tentang target yang ingin Anda capai..."
+                        rows={4}
+                        className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary/5 focus:border-primary focus:bg-white outline-none resize-none transition-all duration-300 font-medium"
+                        placeholder="Ceritakan target yang ingin Anda capai..."
                       />
                     </div>
 
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full btn-primary py-5 text-lg shadow-accent/20"
+                      className="w-full btn-primary !py-5 text-lg shadow-accent-glow flex items-center justify-center gap-3 active:scale-[0.98]"
                     >
                       {isSubmitting ? (
                         <Loader2 className="animate-spin" />
                       ) : (
-                        "Klaim Konsultasi Gratis"
+                        <>
+                          Klaim Konsultasi Gratis <ArrowRight size={20} />
+                        </>
                       )}
                     </button>
                   </form>

@@ -3,7 +3,13 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "../utils/supabase";
-import { Calendar, User, ArrowRight, Search, BookOpen } from "lucide-react";
+import {
+  Calendar,
+  ArrowRight,
+  Search,
+  BookOpen,
+  ChevronRight,
+} from "lucide-react";
 import { motion } from "framer-motion";
 
 interface Post {
@@ -42,7 +48,7 @@ export default function BlogPage() {
   );
 
   return (
-    <div className="bg-[#F5F7FB] min-h-screen pt-32 pb-20">
+    <div className="bg-slate-50 min-h-screen pt-32 pb-20 font-sans">
       <Helmet>
         <title>Blog & Wawasan Digital Marketing | OmzetNaik.id</title>
         <meta
@@ -52,67 +58,92 @@ export default function BlogPage() {
       </Helmet>
 
       {/* --- HEADER SECTION --- */}
-      <div className="container mx-auto px-6 mb-16 text-center">
+      <div className="container relative z-10 mb-20 text-center">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-slate-100 mb-6"
+          className="inline-flex items-center gap-2 px-4 py-1.5 bg-white border border-slate-200 shadow-sm rounded-full mb-8"
         >
-          <BookOpen size={16} className="text-[#FF3B3B]" />
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#0F1F4A]">
+          <BookOpen size={14} className="text-accent" />
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
             Pusat Edukasi
           </span>
         </motion.div>
-        <h1 className="text-4xl md:text-6xl font-heading font-extrabold text-[#0F1F4A] mb-6 leading-tight">
-          Wawasan & <span className="text-[#FF3B3B] italic">Strategi.</span>
-        </h1>
-        <p className="text-slate-500 max-w-2xl mx-auto text-lg font-sans">
+
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.8, ease: [0.2, 0, 0, 1] }}
+          className="text-5xl md:text-7xl lg:text-8xl font-bold text-primary mb-8 leading-[1.05] tracking-tighter"
+        >
+          Wawasan &{" "}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-red-400 italic">
+            Strategi.
+          </span>
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="text-slate-500 max-w-2xl mx-auto text-lg lg:text-xl font-medium leading-relaxed"
+        >
           Temukan tips praktis dan analisis mendalam untuk mengakselerasi
           pertumbuhan bisnis Anda di era digital.
-        </p>
+        </motion.p>
       </div>
 
-      {/* --- SEARCH BAR --- */}
-      <div className="container mx-auto px-6 mb-16 max-w-2xl">
-        <div className="relative group">
+      {/* --- SEARCH BAR (Refined) --- */}
+      <div className="container mb-24 max-w-2xl">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3 }}
+          className="relative group"
+        >
           <Search
-            className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#FF3B3B] transition-colors"
-            size={20}
+            className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-accent transition-colors"
+            size={22}
           />
           <input
             type="text"
             placeholder="Cari topik marketing..."
-            className="w-full pl-14 pr-6 py-5 bg-white border border-slate-100 rounded-[2rem] shadow-xl shadow-primary/5 outline-none focus:ring-2 focus:ring-primary/10 transition-all font-medium text-slate-700"
+            className="w-full pl-16 pr-8 py-6 bg-white border border-slate-200 rounded-[2rem] shadow-premium outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all font-medium text-slate-700 text-lg"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-        </div>
+        </motion.div>
       </div>
 
       {/* --- BLOG GRID --- */}
-      <div className="container mx-auto px-6">
+      <div className="container">
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[1, 2, 3].map((n) => (
               <div
                 key={n}
-                className="bg-white rounded-[2.5rem] h-96 animate-pulse border border-slate-50"
+                className="bg-white rounded-[bento] h-[500px] animate-pulse border border-slate-100 shadow-sm"
               />
             ))}
           </div>
         ) : filteredPosts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            {filteredPosts.map((post) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredPosts.map((post, index) => (
               <motion.article
                 key={post.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="group flex flex-col bg-white rounded-[2.5rem] overflow-hidden border border-slate-100 hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
+                transition={{
+                  delay: index * 0.1,
+                  duration: 0.6,
+                  ease: [0.2, 0, 0, 1],
+                }}
+                className="group flex flex-col bg-white rounded-[bento] overflow-hidden border border-slate-100 shadow-premium hover:shadow-premium-hover transition-all duration-500 hover:-translate-y-2"
               >
                 <Link
                   to={`/blog/${post.slug}`}
-                  className="relative aspect-[16/10] overflow-hidden"
+                  className="relative aspect-[16/10] overflow-hidden bg-slate-100"
                 >
                   <img
                     src={
@@ -120,50 +151,55 @@ export default function BlogPage() {
                       "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop"
                     }
                     alt={post.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-1000 ease-premium group-hover:scale-110"
                   />
                   <div className="absolute top-6 left-6">
-                    <span className="bg-[#0F1F4A] text-white text-[9px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
+                    <span className="bg-primary/90 backdrop-blur-md text-white text-[9px] font-bold px-4 py-2 rounded-full uppercase tracking-widest shadow-lg border border-white/10">
                       {post.category || "Marketing"}
                     </span>
                   </div>
                 </Link>
 
-                <div className="p-8 flex flex-col flex-grow">
-                  <div className="flex items-center gap-4 mb-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                    <div className="flex items-center gap-1.5">
-                      <Calendar size={14} className="text-[#FF3B3B]" />
-                      {new Date(post.created_at).toLocaleDateString("id-ID", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </div>
+                <div className="p-8 lg:p-10 flex flex-col flex-grow">
+                  <div className="flex items-center gap-3 mb-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    <Calendar size={14} className="text-accent" />
+                    {new Date(post.created_at).toLocaleDateString("id-ID", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
                   </div>
+
                   <Link to={`/blog/${post.slug}`}>
-                    <h3 className="text-xl font-heading font-bold text-[#0F1F4A] mb-4 group-hover:text-[#FF3B3B] transition-colors line-clamp-2 leading-snug">
+                    <h3 className="text-2xl lg:text-3xl font-bold text-primary mb-5 group-hover:text-accent transition-colors line-clamp-2 leading-[1.2] tracking-tight">
                       {post.title}
                     </h3>
                   </Link>
-                  <p className="text-slate-500 text-sm leading-relaxed line-clamp-3 mb-8 font-sans">
+
+                  <p className="text-slate-500 text-base leading-relaxed line-clamp-3 mb-10 font-medium opacity-90">
                     {post.excerpt}
                   </p>
-                  <Link
-                    to={`/blog/${post.slug}`}
-                    className="mt-auto flex items-center gap-2 text-[#0F1F4A] font-black text-[10px] uppercase tracking-[0.2em] group/btn"
-                  >
-                    Selengkapnya
-                    <ArrowRight
-                      size={14}
-                      className="group-hover/btn:translate-x-2 transition-transform text-[#FF3B3B]"
-                    />
-                  </Link>
+
+                  <div className="mt-auto pt-8 border-t border-slate-50 flex items-center justify-between">
+                    <Link
+                      to={`/blog/${post.slug}`}
+                      className="flex items-center gap-2 text-primary font-bold text-[11px] uppercase tracking-[0.2em] group/btn hover:text-accent transition-colors"
+                    >
+                      Baca Selengkapnya
+                    </Link>
+                    <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                      <ChevronRight
+                        size={18}
+                        className="group-hover:translate-x-0.5 transition-transform"
+                      />
+                    </div>
+                  </div>
                 </div>
               </motion.article>
             ))}
           </div>
         ) : (
-          <div className="text-center py-20">
+          <div className="text-center py-32 bg-white rounded-[bento] border border-dashed border-slate-200">
             <p className="text-slate-400 font-bold uppercase tracking-widest">
               Artikel tidak ditemukan.
             </p>

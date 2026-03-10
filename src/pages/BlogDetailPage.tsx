@@ -3,8 +3,17 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "../utils/supabase";
-import { Calendar, User, ArrowLeft, Tag, Loader2, Share2 } from "lucide-react";
+import {
+  Calendar,
+  User,
+  ArrowLeft,
+  Tag,
+  Loader2,
+  Share2,
+  Clock,
+} from "lucide-react";
 import toast from "react-hot-toast";
+import { motion } from "framer-motion";
 
 export default function BlogDetailPage() {
   const { slug } = useParams();
@@ -46,9 +55,9 @@ export default function BlogDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8FAFC]">
-        <Loader2 className="w-12 h-12 text-[#FF3B3B] animate-spin mb-4" />
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#0F1F4A]">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
+        <Loader2 className="w-12 h-12 text-accent animate-spin mb-4" />
+        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary">
           Menyelaraskan Konten...
         </p>
       </div>
@@ -58,7 +67,7 @@ export default function BlogDetailPage() {
   if (!post) return null;
 
   return (
-    <article className="pt-32 pb-20 bg-[#F8FAFC] min-h-screen font-sans">
+    <article className="pt-32 pb-20 bg-slate-50 min-h-screen font-sans">
       <Helmet>
         <title>{post.title} | OmzetNaik.id Blog</title>
         <meta name="description" content={post.excerpt} />
@@ -69,12 +78,12 @@ export default function BlogDetailPage() {
         <meta name="twitter:card" content="summary_large_image" />
       </Helmet>
 
-      <div className="container mx-auto px-6 max-w-4xl">
-        {/* Navigation & Actions */}
-        <div className="flex items-center justify-between mb-8">
+      <div className="container relative z-10 max-w-4xl">
+        {/* TOP NAVIGATION & ACTIONS */}
+        <div className="flex items-center justify-between mb-12">
           <Link
             to="/blog"
-            className="inline-flex items-center gap-2 text-slate-400 hover:text-[#0F1F4A] font-bold text-xs uppercase tracking-widest transition-all group"
+            className="inline-flex items-center gap-2 text-slate-400 hover:text-primary font-bold text-[10px] uppercase tracking-[0.2em] transition-all group"
           >
             <ArrowLeft
               size={16}
@@ -84,34 +93,38 @@ export default function BlogDetailPage() {
           </Link>
           <button
             onClick={handleShare}
-            className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100 text-slate-400 hover:text-[#FF3B3B] transition-all"
+            className="p-3 bg-white rounded-2xl shadow-premium border border-slate-100 text-slate-400 hover:text-accent transition-all duration-300 active:scale-90"
           >
             <Share2 size={18} />
           </button>
         </div>
 
-        {/* Hero Image */}
-        <div className="relative group mb-12">
-          <div className="absolute inset-0 bg-[#0F1F4A] rounded-[3rem] rotate-1 scale-[1.02] opacity-5 -z-10 group-hover:rotate-0 transition-transform duration-500"></div>
+        {/* HERO IMAGE SECTION */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative mb-16"
+        >
+          <div className="absolute inset-0 bg-primary/5 rounded-[bento] translate-y-4 scale-[1.02] -z-10 blur-xl"></div>
           <img
             src={
               post.image_url ||
               "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426"
             }
             alt={post.title}
-            className="w-full aspect-video object-cover rounded-[3rem] shadow-2xl border-4 border-white"
+            className="w-full aspect-[21/9] object-cover rounded-[bento] shadow-premium border border-white"
           />
-        </div>
+        </motion.div>
 
-        {/* Article Body */}
-        <div className="bg-white rounded-[3.5rem] p-8 md:p-20 shadow-xl shadow-primary/5 border border-slate-50 relative overflow-hidden">
-          {/* Accent Element */}
-          <div className="absolute top-0 left-0 w-2 h-32 bg-[#FF3B3B]"></div>
+        {/* ARTICLE HEADER & CONTENT CONTAINER */}
+        <div className="bg-white rounded-[bento] p-8 md:p-16 lg:p-24 shadow-premium border border-slate-50 relative">
+          {/* Subtle Vertical Accent Line */}
+          <div className="absolute top-0 left-0 w-1.5 h-40 bg-accent rounded-br-full opacity-80"></div>
 
-          <header className="mb-12">
-            <div className="flex flex-wrap items-center gap-6 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-8 pb-8 border-b border-slate-50">
+          <header className="mb-16">
+            <div className="flex flex-wrap items-center gap-6 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-10 pb-10 border-b border-slate-50">
               <span className="flex items-center gap-2">
-                <Calendar size={14} className="text-[#FF3B3B]" />
+                <Calendar size={14} className="text-accent" />
                 {new Date(post.created_at).toLocaleDateString("id-ID", {
                   day: "numeric",
                   month: "long",
@@ -119,48 +132,63 @@ export default function BlogDetailPage() {
                 })}
               </span>
               <span className="flex items-center gap-2">
-                <User size={14} className="text-[#FF3B3B]" />{" "}
+                <User size={14} className="text-accent" />{" "}
                 {post.profiles?.name || "OmzetNaik Team"}
               </span>
-              <span className="flex items-center gap-2 px-3 py-1 bg-[#0F1F4A]/5 text-[#0F1F4A] rounded-full">
-                <Tag size={12} /> {post.category}
+              <span className="flex items-center gap-2 px-3 py-1 bg-slate-50 text-primary rounded-full border border-slate-100">
+                <Tag size={12} className="text-accent" />{" "}
+                {post.category || "Marketing"}
               </span>
             </div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-extrabold text-[#0F1F4A] leading-[1.1] tracking-tighter">
+            <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-primary leading-[1.05] tracking-tighter mb-8">
               {post.title}
             </h1>
+
+            {/* Lead Text / Excerpt */}
+            <p className="text-xl text-slate-500 font-medium leading-relaxed tracking-tight">
+              {post.excerpt}
+            </p>
           </header>
 
-          {/* Render Content from Tiptap */}
+          {/* MAIN CONTENT (Typography Refinement) */}
           <div
-            className="prose prose-lg prose-slate max-w-none 
-              prose-headings:font-heading prose-headings:text-[#0F1F4A] prose-headings:font-black prose-headings:tracking-tighter
-              prose-p:text-slate-600 prose-p:leading-relaxed
-              prose-strong:text-[#0F1F4A] prose-strong:font-bold
-              prose-img:rounded-[2rem] prose-img:shadow-lg
-              prose-a:text-[#FF3B3B] prose-a:font-bold hover:prose-a:text-[#0F1F4A]
-              prose-blockquote:border-l-[#FF3B3B] prose-blockquote:bg-slate-50 prose-blockquote:py-2 prose-blockquote:rounded-r-2xl
+            className="prose prose-lg lg:prose-xl prose-slate max-w-none 
+              prose-headings:text-primary prose-headings:font-bold prose-headings:tracking-tighter
+              prose-p:text-slate-600 prose-p:leading-relaxed prose-p:mb-8
+              prose-strong:text-primary prose-strong:font-bold
+              prose-img:rounded-[2rem] prose-img:shadow-premium prose-img:my-12
+              prose-a:text-accent prose-a:font-bold prose-a:no-underline hover:prose-a:text-primary transition-colors
+              prose-blockquote:border-l-accent prose-blockquote:bg-slate-50 prose-blockquote:px-8 prose-blockquote:py-4 prose-blockquote:rounded-r-2xl prose-blockquote:italic prose-blockquote:text-slate-500
+              prose-li:text-slate-600
               font-sans"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
 
-          <div className="mt-16 pt-8 border-t border-slate-50 flex flex-col md:flex-row items-center justify-between gap-6">
-            <p className="text-xs text-slate-400 font-medium italic">
-              © 2026 OmzetNaik.id - Akselerasi Bisnis & Properti
-            </p>
+          {/* ARTICLE FOOTER */}
+          <footer className="mt-24 pt-10 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="flex items-center gap-4">
-              <span className="text-[10px] font-black uppercase text-slate-300">
-                Bagikan Artikel:
+              <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400">
+                <Clock size={18} />
+              </div>
+              <p className="text-[11px] text-slate-400 font-medium italic">
+                Dipublikasikan oleh OmzetNaik Editorial Team. <br />© 2026
+                OmzetNaik.id - Akselerasi Bisnis & Properti
+              </p>
+            </div>
+
+            <div className="flex items-center gap-5">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300">
+                Bagikan:
               </span>
               <button
                 onClick={handleShare}
-                className="text-[#0F1F4A] hover:text-[#FF3B3B] transition-colors font-bold text-xs"
+                className="btn-primary !px-6 !py-2.5 !text-[10px] tracking-[0.2em]"
               >
                 Copy Link
               </button>
             </div>
-          </div>
+          </footer>
         </div>
       </div>
     </article>

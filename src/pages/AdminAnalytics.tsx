@@ -16,24 +16,32 @@ import {
 } from "recharts";
 import {
   Globe,
-  MousePointerClick,
   MessageSquare,
   TrendingUp,
-  Users,
   Calendar,
   Filter,
   ArrowUpRight,
   ArrowDownRight,
   Target,
   Zap,
+  Loader2,
+  ChevronDown,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
-// --- Mock Data Agensi (OmzetNaik) ---
+// --- Custom Colors ---
+const COLORS = {
+  primary: "#0F1F4A",
+  accent: "#FF3B3B",
+  slate: "#64748B",
+  emerald: "#10B981",
+  rose: "#F43F5E",
+};
+
 const sourceData = [
-  { name: "Meta Ads", value: 55, color: "#FF3B3B" }, // Growth Red
-  { name: "Google Ads", value: 25, color: "#0F1F4A" }, // Midnight Navy
-  { name: "SEO / Organic", value: 15, color: "#64748B" },
+  { name: "Meta Ads", value: 55, color: COLORS.accent },
+  { name: "Google Ads", value: 25, color: COLORS.primary },
+  { name: "SEO / Organic", value: 15, color: COLORS.slate },
   { name: "Others", value: 5, color: "#CBD5E1" },
 ];
 
@@ -41,7 +49,7 @@ export default function AdminAnalytics() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 800);
+    const timer = setTimeout(() => setLoading(false), 1200);
     return () => clearTimeout(timer);
   }, []);
 
@@ -64,7 +72,7 @@ export default function AdminAnalytics() {
       title: "CPL (Avg)",
       value: "Rp 14.200",
       trend: "-5.2%",
-      up: true, // Turun biaya = bagus
+      up: true,
       icon: <Zap />,
     },
     {
@@ -78,53 +86,64 @@ export default function AdminAnalytics() {
 
   if (loading) {
     return (
-      <div className="h-[80vh] flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-slate-200 border-t-[#FF3B3B] rounded-full animate-spin" />
+      <div className="h-[70vh] flex flex-col items-center justify-center gap-4">
+        <Loader2 className="w-10 h-10 text-accent animate-spin" />
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">
+          Processing Intelligence...
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 pb-10">
+    <div className="space-y-10 font-sans pb-10">
       {/* --- HEADER --- */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-heading font-extrabold text-[#0F1F4A] tracking-tighter">
-            Performance <span className="text-[#FF3B3B]">Dashboard</span>
+          <h1 className="text-4xl font-bold text-primary tracking-tighter">
+            Intelligence <span className="text-accent italic">Overview.</span>
           </h1>
-          <p className="text-slate-500 text-sm font-sans">
-            Monitoring ROI dan efisiensi kanal pemasaran OmzetNaik.id
+          <p className="text-slate-500 font-medium mt-1">
+            Monitoring ROI dan efisiensi kanal pemasaran OmzetNaik.id secara
+            real-time.
           </p>
         </div>
-        <div className="flex gap-3">
-          <button className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-200 rounded-2xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
-            <Calendar size={16} /> Last 30 Days
-          </button>
-          <button className="flex items-center gap-2 px-5 py-3 bg-[#0F1F4A] text-white rounded-2xl text-xs font-bold hover:bg-black transition-all shadow-lg shadow-primary/20">
-            <Filter size={16} /> Advanced Filter
+        <div className="flex items-center gap-3">
+          <div className="flex bg-white p-1 rounded-xl border border-slate-100 shadow-sm">
+            <button className="px-4 py-2 bg-slate-50 text-primary text-xs font-bold rounded-lg border border-slate-100 shadow-sm">
+              Real-time
+            </button>
+            <button className="px-4 py-2 text-slate-400 text-xs font-bold hover:text-primary transition-colors">
+              Historical
+            </button>
+          </div>
+          <button className="flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-xl text-xs font-bold shadow-premium hover:bg-slate-900 transition-all">
+            <Calendar size={16} className="text-accent" /> Export Report
           </button>
         </div>
       </div>
 
-      {/* --- TOP METRICS GRID --- */}
+      {/* --- KPI METRICS --- */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {metrics.map((m, i) => (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
+            transition={{ delay: i * 0.1, duration: 0.6, ease: [0.2, 0, 0, 1] }}
             key={i}
-            className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500 group"
+            className="bg-white p-8 rounded-[bento] border border-slate-100 shadow-premium hover:shadow-premium-hover transition-all duration-500 group relative overflow-hidden"
           >
-            <div className="flex justify-between items-start mb-6">
-              <div className="w-14 h-14 rounded-2xl bg-neutral-soft text-[#0F1F4A] flex items-center justify-center group-hover:bg-[#FF3B3B] group-hover:text-white transition-all duration-500 shadow-inner">
-                {React.cloneElement(m.icon as React.ReactElement, { size: 28 })}
+            <div className="absolute -right-4 -top-4 w-20 h-20 bg-slate-50 rounded-full group-hover:scale-150 transition-transform duration-700 opacity-50" />
+
+            <div className="flex justify-between items-start mb-10 relative z-10">
+              <div className="w-12 h-12 rounded-2xl bg-slate-50 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-sm border border-slate-100 group-hover:border-primary">
+                {React.cloneElement(m.icon as React.ReactElement, { size: 22 })}
               </div>
               <div
-                className={`flex items-center gap-1 text-[10px] font-black px-3 py-1.5 rounded-full ${
+                className={`flex items-center gap-1 text-[10px] font-bold px-2.5 py-1.5 rounded-lg shadow-sm border ${
                   m.up
-                    ? "bg-emerald-50 text-emerald-600"
-                    : "bg-rose-50 text-rose-600"
+                    ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                    : "bg-rose-50 text-rose-600 border-rose-100"
                 }`}
               >
                 {m.up ? (
@@ -135,38 +154,40 @@ export default function AdminAnalytics() {
                 {m.trend}
               </div>
             </div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">
+
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">
               {m.title}
             </p>
-            <h3 className="text-3xl font-heading font-extrabold text-[#0F1F4A] tracking-tight">
+            <h3 className="text-3xl font-bold text-primary tracking-tighter">
               {m.value}
             </h3>
           </motion.div>
         ))}
       </div>
 
-      {/* --- CHARTS SECTION --- */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Conversion Trend Chart */}
-        <div className="lg:col-span-2 bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
+      {/* --- CHARTS GRID --- */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Main Trend Area Chart */}
+        <div className="lg:col-span-8 bg-white p-10 rounded-[bento] border border-slate-100 shadow-premium">
+          <div className="flex items-center justify-between mb-12">
             <div>
-              <h3 className="text-xl font-heading font-extrabold text-[#0F1F4A]">
+              <h3 className="text-xl font-bold text-primary tracking-tight">
                 Conversion Funnel Trend
               </h3>
-              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">
-                Leads vs Website Visitors
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                Acquisition vs conversion over time
               </p>
             </div>
             <div className="flex gap-6">
-              <div className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                <div className="w-3 h-3 rounded-full bg-[#0F1F4A]" /> Visitors
+              <div className="flex items-center gap-2 text-[10px] font-bold text-primary uppercase">
+                <div className="w-2.5 h-2.5 rounded-full bg-primary" /> Visitors
               </div>
-              <div className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                <div className="w-3 h-3 rounded-full bg-[#FF3B3B]" /> Leads
+              <div className="flex items-center gap-2 text-[10px] font-bold text-accent uppercase">
+                <div className="w-2.5 h-2.5 rounded-full bg-accent" /> Leads
               </div>
             </div>
           </div>
+
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
@@ -178,98 +199,140 @@ export default function AdminAnalytics() {
               >
                 <defs>
                   <linearGradient id="colorVis" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0F1F4A" stopOpacity={0.08} />
-                    <stop offset="95%" stopColor="#0F1F4A" stopOpacity={0} />
+                    <stop
+                      offset="5%"
+                      stopColor={COLORS.primary}
+                      stopOpacity={0.1}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor={COLORS.primary}
+                      stopOpacity={0}
+                    />
+                  </linearGradient>
+                  <linearGradient id="colorLeads" x1="0" y1="0" x2="0" y2="1">
+                    <stop
+                      offset="5%"
+                      stopColor={COLORS.accent}
+                      stopOpacity={0.1}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor={COLORS.accent}
+                      stopOpacity={0}
+                    />
                   </linearGradient>
                 </defs>
                 <CartesianGrid
                   strokeDasharray="3 3"
                   vertical={false}
-                  stroke="#f1f5f9"
+                  stroke="#f8fafc"
                 />
                 <XAxis
                   dataKey="name"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 10, fontWeight: 700, fill: "#94a3b8" }}
-                  dy={10}
+                  tick={{ fontSize: 10, fontWeight: 600, fill: "#94a3b8" }}
+                  dy={15}
                 />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "#94a3b8", fontSize: 11, fontWeight: 700 }}
+                  tick={{ fill: "#94a3b8", fontSize: 10, fontWeight: 600 }}
                 />
                 <Tooltip
+                  cursor={{
+                    stroke: COLORS.primary,
+                    strokeWidth: 1,
+                    strokeDasharray: "4 4",
+                  }}
                   contentStyle={{
-                    borderRadius: "24px",
+                    borderRadius: "16px",
                     border: "none",
-                    boxShadow: "0 25px 50px -12px rgba(15, 31, 74, 0.25)",
-                    padding: "16px",
+                    boxShadow: "0 20px 40px -10px rgba(0,0,0,0.1)",
+                    padding: "12px",
                   }}
                 />
                 <Area
                   type="monotone"
                   dataKey="visitors"
-                  stroke="#0F1F4A"
-                  strokeWidth={4}
+                  stroke={COLORS.primary}
+                  strokeWidth={3}
                   fillOpacity={1}
                   fill="url(#colorVis)"
                 />
                 <Area
                   type="monotone"
                   dataKey="leads"
-                  stroke="#FF3B3B"
-                  strokeWidth={4}
-                  fillOpacity={0}
+                  stroke={COLORS.accent}
+                  strokeWidth={3}
+                  fillOpacity={1}
+                  fill="url(#colorLeads)"
                 />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Traffic Source Breakdown */}
-        <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm flex flex-col">
-          <h3 className="text-xl font-heading font-extrabold text-[#0F1F4A] mb-2">
-            Acquisition Source
-          </h3>
-          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-10">
-            Channel Efficiency
-          </p>
-          <div className="h-64 w-full flex-grow">
+        {/* Source Breakdown Pie */}
+        <div className="lg:col-span-4 bg-white p-10 rounded-[bento] border border-slate-100 shadow-premium flex flex-col h-full">
+          <div className="mb-10">
+            <h3 className="text-xl font-bold text-primary tracking-tight">
+              Traffic Acquisition
+            </h3>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+              Source distribution
+            </p>
+          </div>
+
+          <div className="h-64 w-full flex-grow relative">
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span className="text-3xl font-bold text-primary tracking-tighter">
+                55%
+              </span>
+              <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+                Main Source
+              </span>
+            </div>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={sourceData}
-                  innerRadius={80}
+                  innerRadius={85}
                   outerRadius={105}
-                  paddingAngle={10}
+                  paddingAngle={8}
                   dataKey="value"
                   stroke="none"
                 >
                   {sourceData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={entry.color}
+                      cornerRadius={4}
+                    />
                   ))}
                 </Pie>
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="mt-8 space-y-4">
+
+          <div className="mt-10 space-y-3">
             {sourceData.map((s, i) => (
               <div
                 key={i}
-                className="flex items-center justify-between p-3 rounded-2xl hover:bg-neutral-soft transition-colors group"
+                className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50/50 hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all group"
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className="w-2.5 h-2.5 rounded-full"
+                    className="w-2.5 h-2.5 rounded-full shadow-sm"
                     style={{ backgroundColor: s.color }}
                   />
-                  <span className="text-xs font-bold text-slate-600 group-hover:text-[#0F1F4A]">
+                  <span className="text-[11px] font-bold text-slate-500 group-hover:text-primary transition-colors">
                     {s.name}
                   </span>
                 </div>
-                <span className="text-sm font-black text-[#0F1F4A]">
+                <span className="text-xs font-bold text-primary">
                   {s.value}%
                 </span>
               </div>
@@ -278,30 +341,45 @@ export default function AdminAnalytics() {
         </div>
       </div>
 
-      {/* --- INSIGHTS & LOCATION --- */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pb-10">
-        <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
-          <h3 className="text-xl font-heading font-extrabold text-[#0F1F4A] mb-8 flex items-center gap-3">
-            <Globe className="text-[#FF3B3B]" /> Audience Geography
-          </h3>
-          <div className="space-y-6">
+      {/* --- GEOGRAPHY & AI --- */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pb-10">
+        {/* Geography Card */}
+        <div className="lg:col-span-7 bg-white p-10 rounded-[bento] border border-slate-100 shadow-premium">
+          <div className="flex items-center justify-between mb-12">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-primary border border-slate-100">
+                <Globe size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-primary tracking-tight">
+                Audience Geography
+              </h3>
+            </div>
+            <ChevronDown className="text-slate-300" />
+          </div>
+
+          <div className="space-y-8">
             {[
-              { loc: "Yogyakarta", val: "48%", width: "w-[48%]" },
-              { loc: "Jakarta / Jabodetabek", val: "32%", width: "w-[32%]" },
-              { loc: "Jawa Tengah", val: "12%", width: "w-[12%]" },
-              { loc: "Lainnya", val: "8%", width: "w-[8%]" },
+              { loc: "Yogyakarta", val: "48%", color: COLORS.accent },
+              {
+                loc: "Jakarta / Jabodetabek",
+                val: "32%",
+                color: COLORS.primary,
+              },
+              { loc: "Jawa Tengah", val: "12%", color: COLORS.slate },
+              { loc: "Lainnya", val: "8%", color: "#E2E8F0" },
             ].map((item, idx) => (
               <div key={idx}>
-                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">
+                <div className="flex justify-between text-[10px] font-bold uppercase tracking-[0.1em] text-slate-400 mb-3">
                   <span>{item.loc}</span>
-                  <span className="text-[#0F1F4A]">{item.val}</span>
+                  <span className="text-primary">{item.val}</span>
                 </div>
-                <div className="h-2.5 w-full bg-slate-50 rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100/50 p-[1px]">
                   <motion.div
                     initial={{ width: 0 }}
                     whileInView={{ width: item.val }}
-                    transition={{ duration: 1.5, ease: "easeOut" }}
-                    className="h-full bg-[#0F1F4A] rounded-full"
+                    transition={{ duration: 1.5, ease: [0.2, 0, 0, 1] }}
+                    className="h-full rounded-full"
+                    style={{ backgroundColor: item.color }}
                   />
                 </div>
               </div>
@@ -309,29 +387,46 @@ export default function AdminAnalytics() {
           </div>
         </div>
 
-        <div className="bg-[#0F1F4A] p-10 rounded-[3rem] text-white overflow-hidden relative group">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#FF3B3B]/10 rounded-full blur-[80px] -mr-20 -mt-20 group-hover:bg-[#FF3B3B]/20 transition-all duration-700" />
-          <h3 className="text-xl font-heading font-extrabold tracking-tight mb-8 flex items-center gap-3">
-            <Zap className="text-[#FF3B3B]" /> Growth AI Insight
-          </h3>
-          <div className="space-y-6 relative z-10 font-sans">
-            <p className="text-slate-300 text-sm leading-relaxed">
-              Berdasarkan performa 7 hari terakhir, kampanye{" "}
-              <strong className="text-white">Meta Ads - Kavling Premium</strong>{" "}
-              mengalami kenaikan CTR sebesar 24%.
-            </p>
-            <div className="p-6 bg-white/5 border border-white/10 rounded-3xl backdrop-blur-sm">
-              <p className="text-[10px] font-black text-[#FF3B3B] uppercase tracking-[0.2em] mb-3">
-                Strategic Action Plan
-              </p>
-              <p className="text-sm text-slate-100 leading-relaxed italic">
-                "Alokasikan kembali 15% budget dari Google Display ke Meta
-                Advantage+ Shopping Campaign untuk menurunkan CPL sebesar
-                estimasi Rp 2.400 per lead."
-              </p>
+        {/* AI Insight Card (Modern Dark) */}
+        <div className="lg:col-span-5 bg-primary p-12 rounded-[bento] text-white overflow-hidden relative shadow-premium group">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-accent/10 rounded-full blur-[100px] -mr-32 -mt-32 group-hover:bg-accent/20 transition-all duration-700" />
+
+          <div className="relative z-10 flex flex-col h-full">
+            <div className="flex items-center gap-4 mb-10">
+              <div className="w-12 h-12 bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center">
+                <Zap className="text-accent" size={24} />
+              </div>
+              <h3 className="text-xl font-bold tracking-tight">
+                Growth AI Insight
+              </h3>
             </div>
-            <button className="w-full py-4 bg-[#FF3B3B] hover:bg-white hover:text-[#0F1F4A] transition-all duration-300 rounded-2xl font-bold text-xs uppercase tracking-widest shadow-xl shadow-red-600/20">
-              Apply Optimization
+
+            <div className="space-y-8 flex-grow">
+              <p className="text-slate-400 text-lg leading-relaxed font-medium">
+                Berhubungan dengan performa 7 hari terakhir, kampanye{" "}
+                <span className="text-white font-bold underline decoration-accent underline-offset-4">
+                  Meta Ads Kavling Premium
+                </span>{" "}
+                mengalami lonjakan CTR yang signifikan.
+              </p>
+
+              <div className="p-8 bg-white/[0.03] border border-white/10 rounded-[2rem] backdrop-blur-md relative group/action">
+                <div className="absolute top-0 right-0 p-4 opacity-30 group-hover/action:opacity-100 transition-opacity">
+                  <TrendingUp size={20} className="text-accent" />
+                </div>
+                <p className="text-[10px] font-bold text-accent uppercase tracking-[0.2em] mb-4">
+                  Strategic Recommendation
+                </p>
+                <p className="text-base text-slate-200 leading-relaxed italic">
+                  "Alokasikan kembali 15% budget dari kanal Google Display ke
+                  Meta Advantage+ Shopping untuk menurunkan CPL estimasi sebesar
+                  Rp 2.400."
+                </p>
+              </div>
+            </div>
+
+            <button className="mt-10 w-full py-5 bg-accent hover:bg-white hover:text-primary transition-all duration-500 rounded-2xl font-bold text-[11px] uppercase tracking-[0.2em] shadow-accent-glow active:scale-95">
+              Execute Optimization Strategy
             </button>
           </div>
         </div>

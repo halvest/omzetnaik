@@ -16,8 +16,11 @@ import {
   Settings,
   DollarSign,
   FileText,
+  Zap,
+  ChevronRight,
+  Sparkles,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 
 type ServiceFields = {
@@ -107,9 +110,9 @@ export default function ServiceFormModal({ service, onClose, onSave }: Props) {
       } = supabase.storage.from("property-images").getPublicUrl(fileName);
 
       setValue("image_url", publicUrl);
-      toast.success("Gambar layanan diperbarui");
+      toast.success("Service thumbnail deployed");
     } catch (error: any) {
-      toast.error("Gagal upload: " + error.message);
+      toast.error("Asset sync failed");
     } finally {
       setUploading(false);
     }
@@ -133,9 +136,7 @@ export default function ServiceFormModal({ service, onClose, onSave }: Props) {
 
       if (error) throw error;
 
-      toast.success(
-        service?.id ? "Layanan diperbarui" : "Layanan baru diterbitkan",
-      );
+      toast.success(service?.id ? "Catalog updated" : "New service activated");
       onSave();
     } catch (err: any) {
       toast.error(err.message);
@@ -145,169 +146,206 @@ export default function ServiceFormModal({ service, onClose, onSave }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0F1F4A]/40 backdrop-blur-sm p-0 sm:p-4 font-sans">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-primary/40 backdrop-blur-md p-0 sm:p-6 font-sans">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-[#F8FAFC] w-full max-w-[95vw] h-full sm:h-[90vh] sm:rounded-[3rem] shadow-2xl overflow-hidden flex flex-col"
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        className="bg-white w-full max-w-6xl h-full sm:h-[94vh] sm:rounded-[bento] shadow-premium overflow-hidden flex flex-col"
       >
-        {/* TOP BAR */}
-        <div className="px-8 py-4 bg-white border-b border-slate-200 flex items-center justify-between sticky top-0 z-20">
-          <div className="flex items-center gap-4">
-            <div className="p-2 bg-[#FF3B3B] text-white rounded-xl shadow-lg shadow-red-600/20">
-              <Layout size={18} strokeWidth={3} />
+        {/* --- HEADER TERMINAL --- */}
+        <div className="px-8 h-20 bg-white border-b border-slate-100 flex items-center justify-between sticky top-0 z-30">
+          <div className="flex items-center gap-5">
+            <div className="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center shadow-premium">
+              <Layout size={20} strokeWidth={2.5} />
             </div>
-            <h2 className="font-heading font-extrabold text-[#0F1F4A] truncate max-w-[200px] md:max-w-md uppercase tracking-tighter">
-              {currentTitle || "Layanan Baru"}
-            </h2>
+            <div className="hidden md:block">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-0.5">
+                Service Configurator
+              </p>
+              <h2 className="text-sm font-bold text-primary truncate max-w-[300px] uppercase tracking-tight">
+                {currentTitle || "Unnamed Strategy"}
+              </h2>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
+
+          <div className="flex items-center gap-4">
             <button
               onClick={onClose}
-              className="p-2 text-slate-400 hover:bg-slate-100 rounded-xl transition-all font-bold text-xs uppercase px-4"
+              className="px-6 py-2.5 text-slate-400 hover:text-primary font-bold text-[11px] uppercase tracking-widest transition-all"
             >
-              Batal
+              Discard
             </button>
             <button
               onClick={handleSubmit(onSubmit)}
               disabled={isProcessing || uploading}
-              className="px-8 py-3 bg-[#0F1F4A] text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-black transition-all flex items-center gap-2 disabled:opacity-50"
+              className="btn-primary !px-10 !py-3 !text-[11px] flex items-center gap-3 shadow-accent-glow"
             >
               {isProcessing ? (
-                <Loader2 size={14} className="animate-spin" />
+                <Loader2 size={16} className="animate-spin" />
               ) : (
-                <Save size={14} />
+                <Save size={16} />
               )}
-              Simpan Layanan
+              Sync to Catalog
             </button>
           </div>
         </div>
 
-        {/* CONTENT AREA */}
-        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-          {/* MAIN FORM (LEFT) */}
-          <div className="flex-1 overflow-y-auto p-6 md:p-12 bg-white custom-scrollbar">
-            <div className="max-w-3xl mx-auto space-y-10">
-              <div className="space-y-4">
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden bg-slate-50/30">
+          {/* --- MAIN CONTENT (LEFT) --- */}
+          <div className="flex-1 overflow-y-auto p-6 md:p-16 lg:p-20 bg-white no-scrollbar">
+            <div className="max-w-[800px] mx-auto space-y-12">
+              {/* Product Headline */}
+              <div className="space-y-6">
                 <input
                   {...register("title", { required: true })}
-                  placeholder="Nama Layanan (e.g. Meta Ads Scaler)"
-                  className="w-full text-4xl md:text-5xl font-heading font-extrabold text-[#0F1F4A] placeholder:text-slate-100 border-none focus:ring-0 p-0 leading-tight outline-none"
+                  placeholder="Service Name (e.g. Meta Ads Scaler)"
+                  className="w-full text-4xl md:text-5xl font-bold text-primary placeholder:text-slate-100 border-none focus:ring-0 p-0 leading-tight outline-none tracking-tighter"
                 />
-                <div className="h-1.5 w-24 bg-[#FF3B3B] rounded-full" />
+                <div className="h-1.5 w-24 bg-accent rounded-full opacity-80" />
               </div>
 
-              <div className="space-y-4">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                  <FileText size={14} /> Deskripsi Paket
+              {/* Description Canvas */}
+              <div className="space-y-6">
+                <label className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-400 flex items-center gap-2">
+                  <FileText size={14} className="text-accent" /> Offer
+                  Description
                 </label>
                 <textarea
                   {...register("description")}
-                  placeholder="Jelaskan detail layanan ini kepada klien..."
-                  className="w-full text-lg text-slate-600 leading-relaxed border-none focus:ring-0 p-0 min-h-[150px] resize-none outline-none"
+                  placeholder="Elaborate on how this service transforms business ROI..."
+                  className="w-full text-lg text-slate-600 font-medium leading-relaxed border-none focus:ring-0 p-0 min-h-[160px] resize-none outline-none placeholder:text-slate-200"
                 />
               </div>
 
-              <div className="space-y-6 pt-10 border-t border-slate-50">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                  <CheckCircle2 size={14} className="text-emerald-500" />{" "}
-                  Benefit & Fitur
-                </label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {fields.map((field, index) => (
-                    <div key={field.id} className="flex gap-2 group">
-                      <input
-                        {...register(`benefit_list.${index}.value` as const)}
-                        className="flex-grow p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:border-[#0F1F4A] focus:bg-white outline-none font-bold text-sm text-[#0F1F4A]"
-                        placeholder="Poin benefit..."
-                      />
-                      <button
-                        type="button"
-                        onClick={() => remove(index)}
-                        className="p-2 text-slate-300 hover:text-red-500 transition-colors"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  ))}
+              {/* Value Proposition Grid (Benefits) */}
+              <div className="space-y-8 pt-10 border-t border-slate-50">
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-400 flex items-center gap-2">
+                    <CheckCircle2 size={14} className="text-emerald-500" />{" "}
+                    Value Proposition
+                  </label>
                   <button
                     type="button"
                     onClick={() => append({ value: "" })}
-                    className="p-4 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 text-[10px] font-black uppercase flex items-center justify-center gap-2 hover:border-[#0F1F4A] hover:text-[#0F1F4A] transition-all bg-white"
+                    className="flex items-center gap-2 text-[10px] font-bold text-accent uppercase tracking-widest hover:opacity-70 transition-opacity"
                   >
-                    <Plus size={16} /> Tambah Benefit
+                    <Plus size={14} /> Add Line Item
                   </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {fields.map((field, index) => (
+                    <motion.div
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      key={field.id}
+                      className="flex gap-3 group relative"
+                    >
+                      <div className="flex-1 relative">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-accent transition-colors">
+                          <Zap size={14} />
+                        </div>
+                        <input
+                          {...register(`benefit_list.${index}.value` as const)}
+                          className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:border-primary focus:bg-white outline-none font-bold text-sm text-primary transition-all shadow-sm group-hover:shadow-md"
+                          placeholder="e.g. Comprehensive Market Audit"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => remove(index)}
+                        className="p-3 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </motion.div>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* SIDEBAR (RIGHT) */}
-          <aside className="w-full lg:w-[380px] bg-[#F8FAFC] border-l border-slate-200 overflow-y-auto p-8 space-y-8 custom-scrollbar">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-[#0F1F4A] text-[10px] font-black uppercase tracking-widest">
-                <Settings size={14} className="text-[#FF3B3B]" /> Konfigurasi
+          {/* --- SIDEBAR CONFIG (RIGHT) --- */}
+          <aside className="w-full lg:w-[400px] bg-slate-50 border-l border-slate-100 overflow-y-auto p-10 space-y-10 no-scrollbar">
+            {/* Core Metrics */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 text-primary text-[11px] font-bold uppercase tracking-[0.2em]">
+                <Settings size={16} className="text-accent" /> Core Logistics
               </div>
-              <div className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm space-y-6">
-                <div>
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 block">
-                    Kategori
-                  </label>
-                  <select
-                    {...register("category")}
-                    className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-[#0F1F4A] outline-none focus:ring-2 focus:ring-[#0F1F4A]/5"
-                  >
-                    <option value="Ads">Ads Management</option>
-                    <option value="SEO">SEO Search</option>
-                    <option value="Web">Web Dev</option>
-                    <option value="Property">Property</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 block">
-                    Harga Mulai (Rp)
+
+              <div className="bg-white p-8 rounded-[2rem] border border-slate-200/60 shadow-sm space-y-8">
+                <div className="space-y-3">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block px-1">
+                    Industry Taxonomy
                   </label>
                   <div className="relative">
-                    <DollarSign
-                      size={14}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
+                    <select
+                      {...register("category")}
+                      className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-primary outline-none focus:ring-4 focus:ring-primary/5 transition-all appearance-none cursor-pointer"
+                    >
+                      <option value="Ads">Ads Management</option>
+                      <option value="SEO">SEO Search Engine</option>
+                      <option value="Web">Web Development</option>
+                      <option value="Property">Property Listing</option>
+                    </select>
+                    <ChevronRight
+                      size={16}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 rotate-90 text-slate-400 pointer-events-none"
                     />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block px-1">
+                    Baseline Valuation (Rp)
+                  </label>
+                  <div className="relative group">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 group-focus-within:bg-emerald-500 group-focus-within:text-white transition-all">
+                      <DollarSign size={16} />
+                    </div>
                     <input
                       type="number"
                       {...register("price_start")}
-                      className="w-full pl-10 pr-4 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-[#0F1F4A]"
+                      className="w-full pl-16 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-lg font-bold text-primary outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all shadow-inner"
                     />
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-[#0F1F4A] text-[10px] font-black uppercase tracking-widest">
-                <ImageIcon size={14} className="text-[#FF3B3B]" /> Media Cover
+            {/* Visual Branding */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 text-primary text-[11px] font-bold uppercase tracking-[0.2em]">
+                <ImageIcon size={16} className="text-accent" /> Asset Thumbnail
               </div>
-              <div className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm">
-                <div className="aspect-video w-full bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200 relative overflow-hidden group">
+
+              <div className="bg-white p-2 rounded-[2.5rem] border border-slate-200/60 shadow-sm group">
+                <div className="aspect-video w-full bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200 relative overflow-hidden transition-all group-hover:border-accent/30">
                   {currentImage ? (
                     <>
                       <img
                         src={currentImage}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         alt="Preview"
                       />
-                      <button
-                        type="button"
-                        onClick={() => setValue("image_url", "")}
-                        className="absolute inset-0 bg-red-600/80 text-white opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center font-bold text-xs uppercase tracking-widest"
-                      >
-                        Ganti Gambar
-                      </button>
+                      <div className="absolute inset-0 bg-primary/60 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
+                        <button
+                          type="button"
+                          onClick={() => setValue("image_url", "")}
+                          className="px-6 py-2.5 bg-rose-500 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-lg active:scale-95 transition-all"
+                        >
+                          Replace Visual
+                        </button>
+                      </div>
                     </>
                   ) : (
                     <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-100 transition-colors">
-                      <UploadCloud size={32} className="text-slate-300 mb-2" />
-                      <span className="text-[9px] font-black text-slate-400 uppercase text-center px-4">
-                        Upload Thumbnail
+                      <div className="w-14 h-14 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-4 text-slate-300">
+                        <UploadCloud size={28} />
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center px-8 leading-relaxed">
+                        Upload Hero Image
                       </span>
                       <input
                         type="file"
@@ -319,45 +357,48 @@ export default function ServiceFormModal({ service, onClose, onSave }: Props) {
                     </label>
                   )}
                   {uploading && (
-                    <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
-                      <Loader2 className="animate-spin text-[#FF3B3B]" />
+                    <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
+                      <Loader2 className="animate-spin text-accent" size={32} />
+                      <span className="text-[9px] font-bold text-primary uppercase tracking-widest">
+                        Optimizing...
+                      </span>
                     </div>
                   )}
                 </div>
-                <input type="hidden" {...register("image_url")} />
               </div>
             </div>
 
-            <div className="p-6 bg-[#0F1F4A] rounded-[2.5rem] text-white space-y-4 shadow-xl shadow-primary/20">
-              <label className="flex items-center gap-3 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  {...register("is_active")}
-                  className="w-5 h-5 accent-[#FF3B3B]"
-                />
-                <span className="text-[10px] font-black uppercase tracking-widest group-hover:text-[#FF3B3B] transition-colors">
-                  Layanan Aktif
-                </span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  {...register("is_featured")}
-                  className="w-5 h-5 accent-[#FF3B3B]"
-                />
-                <span className="text-[10px] font-black uppercase tracking-widest group-hover:text-[#FF3B3B] transition-colors">
-                  Featured on Home
-                </span>
-              </label>
+            {/* Placement & Status */}
+            <div className="p-8 bg-primary rounded-[2.5rem] text-white space-y-6 shadow-premium relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10">
+                <Sparkles size={40} />
+              </div>
+              <div className="flex flex-col gap-4 relative z-10">
+                <label className="flex items-center justify-between cursor-pointer group p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-all">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">
+                    Active Listing
+                  </span>
+                  <input
+                    type="checkbox"
+                    {...register("is_active")}
+                    className="w-5 h-5 accent-accent"
+                  />
+                </label>
+                <label className="flex items-center justify-between cursor-pointer group p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-all">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">
+                    Featured Highlight
+                  </span>
+                  <input
+                    type="checkbox"
+                    {...register("is_featured")}
+                    className="w-5 h-5 accent-accent"
+                  />
+                </label>
+              </div>
             </div>
           </aside>
         </div>
       </motion.div>
-
-      <style>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
-      `}</style>
     </div>
   );
 }

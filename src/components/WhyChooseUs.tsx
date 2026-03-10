@@ -11,19 +11,19 @@ import { motion } from "framer-motion";
 
 const benefits = [
   {
-    icon: <TrendingUp size={20} />,
+    icon: <TrendingUp size={24} />,
     title: "Berorientasi pada Hasil",
     desc: "Nama kami adalah janji kami. Fokus utama metrik kami adalah pertumbuhan omzet Anda secara riil.",
     tag: "ROI Focused",
   },
   {
-    icon: <BarChart3 size={20} />,
+    icon: <BarChart3 size={24} />,
     title: "Strategi Berbasis Data",
     desc: "Setiap keputusan kampanye diambil berdasarkan analisis data yang akurat, bukan sekadar tebakan atau asumsi.",
     tag: "Data Driven",
   },
   {
-    icon: <Layers size={20} />,
+    icon: <Layers size={24} />,
     title: "Spesialisasi Niche",
     desc: "Kami memahami luar-dalam cara memasarkan produk gaya hidup, kecantikan, properti, dan pariwisata.",
     tag: "Market Expert",
@@ -34,52 +34,50 @@ export default function WhyChooseUs() {
   return (
     <section
       id="why-us"
-      className="relative py-16 lg:py-28 bg-white overflow-hidden"
+      className="relative py-24 lg:py-40 bg-white overflow-hidden"
     >
-      {/* Decorative Blur - Emphasizing "Focus" */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#FF3B3B]/[0.02] rounded-full blur-[120px] -z-10" />
+      {/* Refined Decorative Background */}
+      <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-accent/5 rounded-full blur-[120px] -z-10 animate-pulse" />
 
-      <div className="container relative z-10 px-4 md:px-6">
-        <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
-          {/* --- SISI KIRI: THE PROMISE (Design Thinking: Empathy) --- 
-              Menampilkan 'Expertise' dalam bentuk yang lebih elegan dan tidak 'ngotak'.
-          */}
-          <div className="lg:w-1/2 w-full relative">
+      <div className="container relative z-10">
+        <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-32">
+          {/* --- SISI KIRI: THE PROMISE --- */}
+          <div className="lg:w-[45%] w-full">
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="relative"
+              transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#F8FAFC] border border-slate-200 shadow-soft-premium rounded-full mb-6">
-                <Sparkles size={12} className="text-[#FF3B3B]" />
-                <span className="text-[8px] font-black text-[#0F1F4A] uppercase tracking-[0.2em]">
+              <div className="inline-flex items-center gap-2.5 px-4 py-1.5 bg-slate-50 border border-slate-200 shadow-sm rounded-full mb-8">
+                <Sparkles size={14} className="text-accent" />
+                <span className="text-[10px] font-bold text-primary uppercase tracking-[0.25em]">
                   Our Commitment
                 </span>
               </div>
 
-              <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-[#0F1F4A] leading-[1] tracking-tighter mb-8">
+              <h2 className="text-5xl md:text-6xl lg:text-[5rem] font-bold text-primary leading-[1.05] tracking-tighter mb-10">
                 Kami Tidak <br /> Sekadar{" "}
-                <span className="text-[#FF3B3B] italic underline decoration-[#FF3B3B]/10 underline-offset-8">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-red-400 italic">
                   Berjanji.
                 </span>
               </h2>
 
-              <p className="text-slate-500 text-lg md:text-xl font-medium leading-relaxed max-w-lg mb-10">
+              <p className="text-slate-500 text-lg lg:text-xl font-medium leading-relaxed max-w-lg mb-12">
                 OmzetNaik.id dirancang untuk bisnis yang siap naik kelas dengan
                 strategi yang terukur secara matematis.
               </p>
 
-              {/* Trust Badge - Compact */}
-              <div className="flex items-center gap-4 p-6 bg-[#F8FAFC] rounded-3xl border border-slate-100 w-fit shadow-soft-premium">
-                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
-                  <CheckCircle2 className="text-[#FF3B3B]" size={20} />
+              {/* Trust Badge - Modern Glassmorphism */}
+              <div className="flex items-center gap-5 p-6 bg-slate-50/50 backdrop-blur-sm rounded-[2rem] border border-slate-100 w-fit shadow-premium group hover:shadow-premium-hover transition-all duration-500">
+                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                  <CheckCircle2 className="text-emerald-500" size={24} />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-[#0F1F4A] uppercase tracking-widest">
+                  <p className="text-[10px] font-bold text-primary uppercase tracking-[0.3em] mb-1">
                     Client Priority
                   </p>
-                  <p className="text-sm text-slate-500 font-bold">
+                  <p className="text-sm text-slate-600 font-bold">
                     100% Transparency Report
                   </p>
                 </div>
@@ -87,34 +85,41 @@ export default function WhyChooseUs() {
             </motion.div>
           </div>
 
-          {/* --- SISI KANAN: THE PILLARS (Design Thinking: Clarity) --- */}
-          <div className="lg:w-1/2 w-full">
-            <div className="grid gap-4 md:gap-6">
+          {/* --- SISI KANAN: THE PILLARS (Clean Cards) --- */}
+          <div className="lg:w-[55%] w-full">
+            <div className="grid gap-6">
               {benefits.map((benefit, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="group relative p-8 bg-white rounded-[2.5rem] border border-slate-100 shadow-soft-premium hover:shadow-hover-premium hover:-translate-y-1 transition-all duration-500"
+                  transition={{
+                    delay: index * 0.1,
+                    duration: 0.6,
+                    ease: [0.2, 0, 0, 1],
+                  }}
+                  className="group relative p-8 md:p-10 bg-white rounded-[bento] border border-slate-100 shadow-premium hover:shadow-premium-hover transition-all duration-500 overflow-hidden"
                 >
-                  <div className="flex flex-col md:flex-row gap-6">
-                    {/* Icon Container */}
-                    <div className="shrink-0 w-12 h-12 bg-[#F8FAFC] rounded-2xl flex items-center justify-center group-hover:bg-[#0F1F4A] group-hover:text-white transition-all duration-500">
+                  {/* Subtle hover background decoration */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-slate-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                  <div className="relative z-10 flex flex-col md:flex-row items-start gap-8">
+                    {/* Icon Container - Vercel Style */}
+                    <div className="shrink-0 w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500 border border-slate-100 group-hover:border-primary group-hover:scale-110">
                       {benefit.icon}
                     </div>
 
-                    <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <h4 className="text-xl font-black text-[#0F1F4A] group-hover:text-[#FF3B3B] transition-colors">
+                    <div className="flex-grow">
+                      <div className="flex items-center gap-3 mb-3">
+                        <h4 className="text-2xl font-bold text-primary group-hover:text-accent transition-colors tracking-tight">
                           {benefit.title}
                         </h4>
-                        <span className="text-[7px] font-black px-2 py-0.5 bg-slate-100 text-slate-400 rounded-md uppercase tracking-tighter">
+                        <span className="text-[9px] font-bold px-3 py-1 bg-slate-100 text-slate-400 rounded-full uppercase tracking-widest group-hover:bg-accent/10 group-hover:text-accent transition-colors">
                           {benefit.tag}
                         </span>
                       </div>
-                      <p className="text-slate-500 text-sm leading-relaxed font-medium opacity-90">
+                      <p className="text-slate-500 text-base leading-relaxed font-medium">
                         {benefit.desc}
                       </p>
                     </div>

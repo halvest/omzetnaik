@@ -16,6 +16,10 @@ import {
   Target,
   Camera,
   UploadCloud,
+  Home,
+  Layers,
+  Sparkles,
+  Info,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
@@ -46,7 +50,7 @@ type FormFields = {
   district: string;
   status: "active" | "pending" | "sold" | "inactive";
   is_featured: boolean;
-  image_url: string; // Tambahkan field ini
+  image_url: string;
 };
 
 interface PropertyFormModalProps {
@@ -66,37 +70,39 @@ const StepIndicator = ({
   currentStep: number;
   steps: any[];
 }) => (
-  <div className="flex items-center justify-between mb-10 overflow-x-auto pb-4 no-scrollbar">
+  <div className="flex items-center justify-between mb-12 px-2">
     {steps.map((step, index) => (
       <React.Fragment key={step.number}>
-        <div className="flex flex-col items-center min-w-[70px]">
-          <div
-            className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm ${
-              currentStep >= step.number
-                ? "bg-[#0F1F4A] text-white shadow-[#0F1F4A]/20"
-                : "bg-slate-100 text-slate-400"
-            }`}
+        <div className="flex flex-col items-center relative z-10">
+          <motion.div
+            animate={{
+              scale: currentStep === step.number ? 1.1 : 1,
+              backgroundColor:
+                currentStep >= step.number ? "#0F1F4A" : "#F1F5F9",
+              color: currentStep >= step.number ? "#FFFFFF" : "#94A3B8",
+            }}
+            className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm border-2 border-white"
           >
             {currentStep > step.number ? (
               <Check size={20} strokeWidth={3} />
             ) : (
               step.icon
             )}
-          </div>
+          </motion.div>
           <span
-            className={`mt-2 text-[9px] font-black uppercase tracking-widest ${
-              currentStep === step.number ? "text-[#0F1F4A]" : "text-slate-400"
-            }`}
+            className={`absolute -bottom-7 text-[9px] font-bold uppercase tracking-[0.2em] whitespace-nowrap transition-colors ${currentStep === step.number ? "text-primary" : "text-slate-400"}`}
           >
             {step.title}
           </span>
         </div>
         {index < steps.length - 1 && (
-          <div
-            className={`flex-1 h-[2px] mx-2 mb-6 min-w-[20px] transition-colors duration-500 ${
-              currentStep > step.number ? "bg-[#0F1F4A]" : "bg-slate-100"
-            }`}
-          />
+          <div className="flex-1 h-1 mx-4 bg-slate-100 rounded-full overflow-hidden relative">
+            <motion.div
+              initial={{ width: "0%" }}
+              animate={{ width: currentStep > step.number ? "100%" : "0%" }}
+              className="absolute inset-0 bg-accent"
+            />
+          </div>
         )}
       </React.Fragment>
     ))}
@@ -125,6 +131,39 @@ export default function PropertyFormModal({
     mode: "onChange",
   });
 
+  const STEPS = [
+    {
+      number: 1,
+      title: "Identity",
+      icon: <FileText size={18} />,
+      fields: ["title", "property_type", "listing_type"],
+    },
+    {
+      number: 2,
+      title: "Specs",
+      icon: <Ruler size={18} />,
+      fields: ["land_size", "building_size", "bedrooms", "bathrooms"],
+    },
+    {
+      number: 3,
+      title: "Finance",
+      icon: <DollarSign size={18} />,
+      fields: ["price", "status"],
+    },
+    {
+      number: 4,
+      title: "Location",
+      icon: <MapPin size={18} />,
+      fields: ["city", "district", "address"],
+    },
+    {
+      number: 5,
+      title: "Asset",
+      icon: <Camera size={18} />,
+      fields: ["image_url"],
+    },
+  ];
+
   useEffect(() => {
     if (villa) {
       reset(villa);
@@ -132,7 +171,7 @@ export default function PropertyFormModal({
     } else {
       reset({
         listing_type: "jual",
-        status: "pending",
+        status: "active",
         furnishing: "unfurnished",
         is_featured: false,
         bedrooms: 0,
@@ -143,64 +182,26 @@ export default function PropertyFormModal({
     }
   }, [villa, reset]);
 
-  const STEPS = [
-    {
-      number: 1,
-      title: "Informasi",
-      icon: <FileText size={20} />,
-      fields: ["title", "property_type", "listing_type"],
-    },
-    {
-      number: 2,
-      title: "Spesifikasi",
-      icon: <Ruler size={20} />,
-      fields: ["land_size", "building_size", "bedrooms"],
-    },
-    {
-      number: 3,
-      title: "Finansial",
-      icon: <DollarSign size={20} />,
-      fields: ["price", "status"],
-    },
-    {
-      number: 4,
-      title: "Lokasi",
-      icon: <MapPin size={20} />,
-      fields: ["city", "district", "address"],
-    },
-    {
-      number: 5,
-      title: "Media",
-      icon: <Camera size={20} />,
-      fields: ["image_url"],
-    },
-  ];
-
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setUploading(true);
       if (!e.target.files || e.target.files.length === 0) return;
-
       const file = e.target.files[0];
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `properties/${fileName}`;
-
+      const fileName = `prop_${Date.now()}.${file.name.split(".").pop()}`;
       const { error: uploadError } = await supabase.storage
         .from("property-images")
-        .upload(filePath, file);
-
+        .upload(`properties/${fileName}`, file);
       if (uploadError) throw uploadError;
-
       const {
         data: { publicUrl },
-      } = supabase.storage.from("property-images").getPublicUrl(filePath);
-
+      } = supabase.storage
+        .from("property-images")
+        .getPublicUrl(`properties/${fileName}`);
       setValue("image_url", publicUrl);
       setPreviewImage(publicUrl);
-      toast.success("Foto berhasil diunggah");
+      toast.success("Asset verified and uploaded");
     } catch (error: any) {
-      toast.error("Gagal unggah foto: " + error.message);
+      toast.error("Upload failed: " + error.message);
     } finally {
       setUploading(false);
     }
@@ -214,19 +215,16 @@ export default function PropertyFormModal({
         slug: formData.slug || slugify(formData.title),
         updated_at: new Date().toISOString(),
       };
-
       const { error } = villa?.id
         ? await supabase.from("properties").update(finalData).eq("id", villa.id)
         : await supabase.from("properties").insert([finalData]);
-
       if (error) throw error;
-
       toast.success(
-        villa?.id ? "Data diperbarui" : "Listing berhasil dipublish",
+        villa?.id ? "Records updated" : "Listing deployed successfully",
       );
       onSave();
     } catch (err: any) {
-      toast.error(err.message || "Terjadi kesalahan sistem");
+      toast.error(err.message || "System error");
     } finally {
       setIsProcessing(false);
     }
@@ -236,357 +234,375 @@ export default function PropertyFormModal({
     const fieldsToValidate = STEPS[currentStep - 1].fields;
     const isValid = await trigger(fieldsToValidate as any);
     if (isValid) setCurrentStep((s) => Math.min(s + 1, 5));
-    else toast.error("Mohon lengkapi data yang wajib diisi");
+    else toast.error("Validation failed. Please check mandatory fields.");
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-4 bg-[#0F1F4A]/60 backdrop-blur-md">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-6 bg-primary/40 backdrop-blur-md">
       <motion.div
-        initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 50, opacity: 0 }}
-        className="bg-white w-full max-w-4xl h-full sm:h-auto sm:max-h-[95vh] sm:rounded-[3rem] flex flex-col shadow-2xl overflow-hidden"
+        initial={{ y: 20, opacity: 0, scale: 0.95 }}
+        animate={{ y: 0, opacity: 1, scale: 1 }}
+        exit={{ y: 20, opacity: 0, scale: 0.95 }}
+        className="bg-white w-full max-w-4xl h-full sm:h-auto sm:max-h-[94vh] sm:rounded-[bento] flex flex-col shadow-premium overflow-hidden font-sans"
       >
         {/* Header */}
-        <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-white">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-[#FF3B3B] text-white rounded-xl">
-              <Target size={20} />
+        <div className="px-10 h-20 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-20">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-accent text-white rounded-xl flex items-center justify-center shadow-accent-glow">
+              <Home size={20} strokeWidth={2.5} />
             </div>
             <div>
-              <h2 className="text-xl font-heading font-extrabold text-[#0F1F4A] leading-none uppercase tracking-tighter">
-                {villa?.id ? "Edit Properti" : "Post Properti Baru"}
+              <h2 className="text-sm font-bold text-primary uppercase tracking-tight">
+                {villa?.id ? "Update Inventory Record" : "Deploy New Listing"}
               </h2>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
-                CMS OmzetNaik.id
+              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-0.5">
+                Asset Control Console
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-3 bg-neutral-soft text-slate-500 rounded-2xl hover:bg-rose-50 hover:text-rose-500 transition-all"
+            className="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-50 transition-colors"
           >
             <X size={20} />
           </button>
         </div>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto px-8 py-10 custom-scrollbar">
-          <StepIndicator currentStep={currentStep} steps={STEPS} />
+        {/* Body Content Area */}
+        <div className="flex-1 overflow-y-auto px-10 py-12 no-scrollbar bg-slate-50/30">
+          <div className="max-w-2xl mx-auto">
+            <StepIndicator currentStep={currentStep} steps={STEPS} />
 
-          <form className="max-w-2xl mx-auto pb-10">
-            <AnimatePresence mode="wait">
-              {currentStep === 1 && (
-                <motion.div
-                  key="s1"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-6"
-                >
-                  <div>
-                    <label className="label-style">
-                      Judul Listing <span className="text-accent">*</span>
-                    </label>
-                    <input
-                      {...register("title", { required: "Judul wajib diisi" })}
-                      className={`modern-input ${errors.title ? "border-red-500" : ""}`}
-                      placeholder="Contoh: Villa Scandinavia Seturan"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="label-style">Tipe Properti</label>
+            <form className="mt-16 space-y-10">
+              <AnimatePresence mode="wait">
+                {currentStep === 1 && (
+                  <motion.div
+                    key="s1"
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    className="space-y-8"
+                  >
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1 flex items-center gap-2">
+                        <Info size={12} className="text-accent" /> Headline
+                        Identity
+                      </label>
                       <input
-                        {...register("property_type", { required: true })}
-                        className="modern-input"
-                        placeholder="Rumah/Villa/Kavling"
+                        {...register("title", { required: true })}
+                        className="modern-input-v2"
+                        placeholder="e.g. Modern Minimalist Villa Seturan"
                       />
                     </div>
-                    <div>
-                      <label className="label-style">Jenis Listing</label>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">
+                          Classification
+                        </label>
+                        <input
+                          {...register("property_type", { required: true })}
+                          className="modern-input-v2"
+                          placeholder="Rumah/Villa/Ruko"
+                        />
+                      </div>
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">
+                          Transaction Mode
+                        </label>
+                        <select
+                          {...register("listing_type")}
+                          className="modern-input-v2 uppercase"
+                        >
+                          {LISTING_TYPES.map((t) => (
+                            <option key={t} value={t}>
+                              {t}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {currentStep === 2 && (
+                  <motion.div
+                    key="s2"
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    className="space-y-8"
+                  >
+                    <div className="grid grid-cols-2 gap-8">
+                      <div className="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm text-center">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-4">
+                          Land Area (m²)
+                        </label>
+                        <input
+                          type="number"
+                          {...register("land_size")}
+                          className="text-4xl font-bold text-primary bg-transparent text-center border-none focus:ring-0 w-full"
+                        />
+                      </div>
+                      <div className="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm text-center">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-4">
+                          Building Area (m²)
+                        </label>
+                        <input
+                          type="number"
+                          {...register("building_size")}
+                          className="text-4xl font-bold text-primary bg-transparent text-center border-none focus:ring-0 w-full"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-6">
+                      {[
+                        { name: "bedrooms", label: "Beds" },
+                        { name: "bathrooms", label: "Baths" },
+                        {
+                          name: "is_featured",
+                          label: "Featured?",
+                          type: "checkbox",
+                        },
+                      ].map((f) => (
+                        <div
+                          key={f.name}
+                          className="flex flex-col items-center justify-center p-6 bg-slate-50/50 rounded-3xl border border-slate-100 border-dashed"
+                        >
+                          <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3">
+                            {f.label}
+                          </label>
+                          {f.type === "checkbox" ? (
+                            <input
+                              type="checkbox"
+                              {...register(f.name as any)}
+                              className="w-6 h-6 accent-primary"
+                            />
+                          ) : (
+                            <input
+                              type="number"
+                              {...register(f.name as any)}
+                              className="w-full text-center bg-transparent font-bold text-xl text-primary border-none focus:ring-0 p-0"
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+
+                {currentStep === 3 && (
+                  <motion.div
+                    key="s3"
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    className="space-y-10 text-center"
+                  >
+                    <div className="p-12 bg-primary rounded-[3rem] shadow-premium relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 p-8 opacity-10">
+                        <DollarSign size={80} />
+                      </div>
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-[0.3em] mb-6 block relative z-10">
+                        Asking Price Portfolio
+                      </label>
+                      <div className="flex items-center justify-center gap-4 relative z-10">
+                        <span className="text-3xl font-bold text-accent italic">
+                          Rp
+                        </span>
+                        <input
+                          type="number"
+                          {...register("price", { required: true })}
+                          className="bg-transparent border-none text-white text-5xl font-bold focus:ring-0 w-full max-w-[300px] p-0"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                    <div className="max-w-xs mx-auto space-y-3">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        Market Exposure Status
+                      </label>
                       <select
-                        {...register("listing_type")}
-                        className="modern-input uppercase font-bold"
+                        {...register("status")}
+                        className="modern-input-v2 uppercase text-center font-bold"
                       >
-                        {LISTING_TYPES.map((t) => (
-                          <option key={t} value={t}>
-                            {t}
+                        {STATUS_OPTIONS.map((s) => (
+                          <option key={s} value={s}>
+                            {s}
                           </option>
                         ))}
                       </select>
                     </div>
-                  </div>
-                  <div>
-                    <label className="label-style">Deskripsi Singkat</label>
-                    <textarea
-                      {...register("description")}
-                      rows={4}
-                      className="modern-input"
-                      placeholder="Jelaskan nilai jual utama properti..."
-                    />
-                  </div>
-                </motion.div>
-              )}
+                  </motion.div>
+                )}
 
-              {currentStep === 2 && (
-                <motion.div
-                  key="s2"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="space-y-6"
-                >
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <label className="label-style text-center">
-                        Luas Tanah (m²)
-                      </label>
-                      <input
-                        type="number"
-                        {...register("land_size", { valueAsNumber: true })}
-                        className="modern-input text-center text-xl font-black"
-                      />
-                    </div>
-                    <div>
-                      <label className="label-style text-center">
-                        Luas Bangunan (m²)
-                      </label>
-                      <input
-                        type="number"
-                        {...register("building_size", { valueAsNumber: true })}
-                        className="modern-input text-center text-xl font-black"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 bg-neutral-soft p-6 rounded-[2rem]">
-                    {[
-                      { name: "bedrooms", label: "Kamar Tidur" },
-                      { name: "bathrooms", label: "Kamar Mandi" },
-                      {
-                        name: "is_featured",
-                        label: "Unggulan?",
-                        type: "checkbox",
-                      },
-                    ].map((f) => (
-                      <div key={f.name} className="flex flex-col items-center">
-                        <label className="text-[10px] font-black text-slate-400 uppercase mb-2">
-                          {f.label}
+                {currentStep === 4 && (
+                  <motion.div
+                    key="s4"
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    className="space-y-8"
+                  >
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
+                          City/Province
                         </label>
-                        {f.type === "checkbox" ? (
-                          <input
-                            type="checkbox"
-                            {...register(f.name as any)}
-                            className="w-6 h-6 accent-[#0F1F4A]"
-                          />
-                        ) : (
-                          <input
-                            type="number"
-                            {...register(f.name as any, {
-                              valueAsNumber: true,
-                            })}
-                            className="modern-input text-center p-2"
-                          />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-
-              {currentStep === 3 && (
-                <motion.div
-                  key="s3"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="space-y-8 text-center"
-                >
-                  <div className="p-10 bg-primary-50 rounded-[3rem] border-2 border-primary-100">
-                    <label className="text-sm font-black text-[#0F1F4A] uppercase tracking-widest mb-4 block">
-                      Harga Penawaran
-                    </label>
-                    <div className="relative inline-block w-full">
-                      <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-[#0F1F4A]/30 text-2xl">
-                        Rp
-                      </span>
-                      <input
-                        type="number"
-                        {...register("price", {
-                          required: true,
-                          valueAsNumber: true,
-                        })}
-                        className="modern-input pl-20 text-3xl font-black text-[#0F1F4A] bg-white border-none shadow-xl"
-                      />
-                    </div>
-                  </div>
-                  <div className="max-w-xs mx-auto">
-                    <label className="label-style">Status Publikasi</label>
-                    <select
-                      {...register("status")}
-                      className="modern-input text-center uppercase font-bold"
-                    >
-                      {STATUS_OPTIONS.map((s) => (
-                        <option key={s} value={s}>
-                          {s}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </motion.div>
-              )}
-
-              {currentStep === 4 && (
-                <motion.div
-                  key="s4"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="space-y-6 text-left"
-                >
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="label-style">Kota</label>
-                      <input
-                        {...register("city", { required: true })}
-                        className="modern-input"
-                        placeholder="Yogyakarta"
-                      />
-                    </div>
-                    <div>
-                      <label className="label-style">Kecamatan</label>
-                      <input
-                        {...register("district", { required: true })}
-                        className="modern-input"
-                        placeholder="Sleman"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="label-style">Alamat Lengkap</label>
-                    <textarea
-                      {...register("address")}
-                      rows={3}
-                      className="modern-input"
-                      placeholder="Jl. Nama Jalan No. XX..."
-                    />
-                  </div>
-                </motion.div>
-              )}
-
-              {currentStep === 5 && (
-                <motion.div
-                  key="s5"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="space-y-6"
-                >
-                  <div className="p-8 border-2 border-dashed border-slate-200 rounded-[2.5rem] bg-slate-50 text-center relative overflow-hidden">
-                    {previewImage ? (
-                      <div className="relative group aspect-video">
-                        <img
-                          src={previewImage}
-                          alt="Preview"
-                          className="w-full h-full object-cover rounded-2xl shadow-lg"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setPreviewImage(null);
-                            setValue("image_url", "");
-                          }}
-                          className="absolute top-4 right-4 p-2 bg-red-500 text-white rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <Trash2 size={20} />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="py-10 flex flex-col items-center">
-                        <UploadCloud
-                          size={48}
-                          className="text-slate-300 mb-4"
-                        />
-                        <h4 className="text-[#0F1F4A] font-bold">
-                          Pilih Foto Utama
-                        </h4>
-                        <p className="text-xs text-slate-400 mt-1 mb-6">
-                          Format JPG, PNG, WEBP (Max 2MB)
-                        </p>
                         <input
-                          type="file"
-                          id="file-upload"
-                          className="hidden"
-                          accept="image/*"
-                          onChange={handleUpload}
-                          disabled={uploading}
+                          {...register("city", { required: true })}
+                          className="modern-input-v2"
+                          placeholder="e.g. Yogyakarta"
                         />
-                        <label
-                          htmlFor="file-upload"
-                          className="px-6 py-3 bg-[#0F1F4A] text-white rounded-xl text-xs font-bold cursor-pointer hover:bg-black transition-all flex items-center gap-2"
-                        >
-                          {uploading ? (
-                            <Loader2 className="animate-spin" size={16} />
-                          ) : (
-                            <Camera size={16} />
-                          )}
-                          {uploading ? "Mengunggah..." : "Pilih File"}
-                        </label>
                       </div>
-                    )}
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
+                          District
+                        </label>
+                        <input
+                          {...register("district", { required: true })}
+                          className="modern-input-v2"
+                          placeholder="e.g. Sleman"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
+                        Full Logistics Address
+                      </label>
+                      <textarea
+                        {...register("address")}
+                        rows={4}
+                        className="modern-input-v2 resize-none leading-relaxed"
+                        placeholder="Complete coordinate address..."
+                      />
+                    </div>
+                  </motion.div>
+                )}
+
+                {currentStep === 5 && (
+                  <motion.div
+                    key="s5"
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="space-y-8"
+                  >
+                    <div className="aspect-video bg-white rounded-[2.5rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center relative overflow-hidden group hover:border-accent/40 transition-all duration-500">
+                      {previewImage ? (
+                        <>
+                          <img
+                            src={previewImage}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            alt=""
+                          />
+                          <div className="absolute inset-0 bg-primary/60 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPreviewImage(null);
+                                setValue("image_url", "");
+                              }}
+                              className="px-6 py-2.5 bg-rose-500 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-lg"
+                            >
+                              Change Asset
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <label className="cursor-pointer text-center flex flex-col items-center group/label p-10">
+                          <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 group-hover/label:bg-accent group-hover/label:text-white transition-all shadow-sm">
+                            <UploadCloud size={32} />
+                          </div>
+                          <h4 className="text-primary font-bold tracking-tight text-lg mb-2">
+                            Upload Master Asset
+                          </h4>
+                          <p className="text-[10px] text-slate-400 uppercase tracking-widest font-medium">
+                            Recommended: High-Res 4:3 Aspect Ratio
+                          </p>
+                          <input
+                            type="file"
+                            className="hidden"
+                            accept="image/*"
+                            onChange={handleUpload}
+                            disabled={uploading}
+                          />
+                        </label>
+                      )}
+                      {uploading && (
+                        <div className="absolute inset-0 bg-white/90 flex flex-col items-center justify-center gap-3">
+                          <Loader2
+                            className="animate-spin text-accent"
+                            size={32}
+                          />
+                          <span className="text-[9px] font-bold text-primary uppercase tracking-[0.3em]">
+                            Syncing Asset...
+                          </span>
+                        </div>
+                      )}
+                    </div>
                     <input
                       type="hidden"
-                      {...register("image_url", {
-                        required: "Foto utama wajib diunggah",
-                      })}
+                      {...register("image_url", { required: true })}
                     />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </form>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </form>
+          </div>
         </div>
 
-        {/* Footer */}
-        <div className="p-8 border-t border-slate-100 bg-neutral-soft flex items-center justify-between gap-4">
+        {/* Footer Navigation */}
+        <div className="px-10 py-8 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-6 sticky bottom-0 z-20">
           <button
             type="button"
             onClick={
               currentStep === 1 ? onClose : () => setCurrentStep((s) => s - 1)
             }
-            className="px-8 py-4 bg-white text-slate-500 font-black text-xs uppercase tracking-widest rounded-2xl border border-slate-200 hover:bg-slate-50 transition-all"
+            className="px-8 py-3.5 bg-white text-slate-500 font-bold text-[11px] uppercase tracking-[0.2em] rounded-2xl border border-slate-200 hover:bg-slate-100 transition-all shadow-sm"
           >
-            {currentStep === 1 ? "Batal" : "Kembali"}
+            {currentStep === 1 ? "Discard" : "Previous Step"}
           </button>
 
-          {currentStep < 5 ? (
-            <button
-              type="button"
-              onClick={handleNext}
-              className="px-12 py-4 bg-[#0F1F4A] text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl hover:bg-black transition-all flex items-center gap-2"
-            >
-              Selanjutnya <ChevronRight size={16} />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleSubmit(onSubmit)}
-              disabled={isProcessing || uploading}
-              className="px-12 py-4 bg-[#FF3B3B] text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl hover:bg-[#E22F2F] transition-all flex items-center gap-2 disabled:opacity-50"
-            >
-              {isProcessing ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                <Save size={18} />
-              )}
-              {isProcessing ? "Menyimpan..." : "Konfirmasi & Publish"}
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            <div className="flex gap-1.5 mr-4">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <div
+                  key={n}
+                  className={`w-1.5 h-1.5 rounded-full ${currentStep === n ? "bg-accent w-4" : "bg-slate-200"} transition-all`}
+                />
+              ))}
+            </div>
+
+            {currentStep < 5 ? (
+              <button
+                type="button"
+                onClick={handleNext}
+                className="btn-primary !px-12 !py-3.5 !text-[11px] flex items-center gap-3 shadow-accent-glow"
+              >
+                Next Sequence <ChevronRight size={16} />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSubmit(onSubmit)}
+                disabled={isProcessing || uploading}
+                className="btn-primary !bg-emerald-500 !px-12 !py-3.5 !text-[11px] flex items-center gap-3 shadow-emerald-200/50 disabled:opacity-50"
+              >
+                {isProcessing ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  <Save size={18} />
+                )}
+                Confirm & Deploy
+              </button>
+            )}
+          </div>
         </div>
       </motion.div>
 
       <style>{`
-        .label-style { font-size: 0.75rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: #64748B; margin-bottom: 0.5rem; display: block; }
-        .modern-input { width: 100%; padding: 1.25rem 1.5rem; background-color: #F8FAFC; border: 2px solid #F1F5F9; border-radius: 1.5rem; font-size: 0.875rem; font-weight: 700; color: #0F172A; transition: all 0.3s; }
-        .modern-input:focus { outline: none; background-color: #FFFFFF; border-color: #0F1F4A; box-shadow: 0 10px 15px -3px rgba(15, 31, 74, 0.1); }
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+        .modern-input-v2 { width: 100%; padding: 1.25rem 1.5rem; background-color: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 1.5rem; font-size: 0.875rem; font-weight: 700; color: #0F172A; transition: all 0.3s; outline: none; }
+        .modern-input-v2:focus { border-color: #FF3B3B; background-color: #FFFFFF; box-shadow: 0 10px 20px -10px rgba(15, 31, 74, 0.1); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
       `}</style>
     </div>
   );

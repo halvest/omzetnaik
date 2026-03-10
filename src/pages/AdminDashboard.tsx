@@ -4,16 +4,17 @@ import { supabase } from "../utils/supabase";
 import { Link } from "react-router-dom";
 import {
   CheckCircle,
-  XCircle,
   Users,
   TrendingUp,
   Building2,
-  Wallet,
   ArrowRight,
   PlusCircle,
   Clock,
   Briefcase,
   Layers,
+  ArrowUpRight,
+  MessageSquare,
+  Loader2,
 } from "lucide-react";
 import {
   BarChart,
@@ -25,38 +26,47 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
+import { motion } from "framer-motion";
 
-// --- Tipe Data ---
 interface Lead {
   created_at: string;
   id: string;
-  name: string; // Disesuaikan dengan skema tabel leads kamu
-  domisili?: string;
+  name: string;
   phone: string;
+  type?: string;
 }
 
-const StatCard = ({ title, value, icon, color, loading }: any) => (
-  <div className="bg-white p-6 rounded-3xl border border-slate-100 flex items-center gap-5 shadow-sm hover:shadow-md transition-all duration-300 group overflow-hidden relative">
+const StatCard = ({ title, value, icon, color, loading, trend }: any) => (
+  <div className="bg-white p-6 rounded-[2rem] border border-slate-100 flex flex-col gap-4 shadow-premium hover:shadow-premium-hover transition-all duration-500 group relative overflow-hidden">
     <div
-      className={`absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 rounded-full opacity-5 transition-transform group-hover:scale-110 ${color.bg}`}
+      className={`absolute -right-4 -top-4 w-20 h-20 rounded-full opacity-[0.03] transition-transform group-hover:scale-150 duration-700 ${color.bg}`}
     />
-    <div
-      className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${color.bg} ${color.text}`}
-    >
-      {loading ? (
-        <div className="w-6 h-6 bg-current/20 animate-pulse rounded-md" />
-      ) : (
-        React.cloneElement(icon, { size: 28 })
+
+    <div className="flex items-center justify-between">
+      <div
+        className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${color.bg} ${color.text}`}
+      >
+        {loading ? (
+          <Loader2 className="animate-spin w-5 h-5" />
+        ) : (
+          React.cloneElement(icon, { size: 22 })
+        )}
+      </div>
+      {!loading && trend && (
+        <div className="flex items-center gap-1 text-emerald-500 bg-emerald-50 px-2 py-1 rounded-lg text-[10px] font-bold">
+          <TrendingUp size={12} /> {trend}
+        </div>
       )}
     </div>
-    <div className="flex-1">
-      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+
+    <div>
+      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-1">
         {title}
       </p>
       {loading ? (
-        <div className="h-7 bg-slate-100 animate-pulse rounded w-20" />
+        <div className="h-8 bg-slate-50 animate-pulse rounded-lg w-24" />
       ) : (
-        <p className="text-2xl font-black text-[#0F1F4A] tracking-tight">
+        <p className="text-3xl font-bold text-primary tracking-tighter">
           {value}
         </p>
       )}
@@ -94,7 +104,7 @@ export default function AdminDashboard() {
 
         const [
           propsRes,
-          leadsCountRes,
+          leadsRes,
           recentLeadsRes,
           dailyLeadsRes,
           servicesRes,
@@ -106,7 +116,7 @@ export default function AdminDashboard() {
             .from("leads")
             .select("*")
             .order("created_at", { ascending: false })
-            .limit(6),
+            .limit(5),
           supabase
             .from("leads")
             .select("created_at")
@@ -118,14 +128,13 @@ export default function AdminDashboard() {
         ]);
 
         const properties = propsRes.data || [];
-
         setStats({
           totalUnits: properties.length,
           available: properties.filter((p) =>
             ["active", "pending"].includes(p.status),
           ).length,
           sold: properties.filter((p) => p.status === "sold").length,
-          totalLeads: leadsCountRes.count || 0,
+          totalLeads: leadsRes.count || 0,
           totalServices: servicesRes.count || 0,
           totalPortfolio: portfolioRes.count || 0,
         });
@@ -159,129 +168,134 @@ export default function AdminDashboard() {
   }, [dailyLeads]);
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 font-sans">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-10 font-sans pb-10">
+      {/* --- TOP HEADER --- */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black text-[#0F1F4A] tracking-tighter">
-            {greeting}, Hasyim!
+          <h1 className="text-4xl font-bold text-primary tracking-tighter">
+            {greeting}, Hasyim Adani
           </h1>
-          <p className="text-slate-500 text-sm font-medium mt-1">
-            Pantau ekosistem OmzetNaik.id dari properti hingga performa agensi.
+          <p className="text-slate-500 font-medium mt-1">
+            Pantau pertumbuhan ekosistem bisnis dan performa inbound hari ini.
           </p>
         </div>
-        <div className="flex items-center gap-3 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
-          <div className="w-10 h-10 rounded-xl bg-[#F8FAFC] flex items-center justify-center text-slate-400">
-            <Clock size={20} />
-          </div>
-          <div className="pr-4">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-              Update Terakhir
-            </p>
-            <p className="text-xs font-bold text-[#0F1F4A]">
-              {new Date().toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}{" "}
-              WIB
-            </p>
-          </div>
+        <div className="flex items-center gap-3 bg-white px-5 py-3 rounded-2xl border border-slate-100 shadow-sm">
+          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-r border-slate-100 pr-3">
+            Live Feed
+          </span>
+          <p className="text-xs font-bold text-primary">
+            {new Date().toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
+          </p>
         </div>
       </div>
 
-      {/* Statistik Grid - Dioptimalkan untuk 6 Card */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      {/* --- KPI STATS GRID --- */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
         <StatCard
-          title="Unit Properti"
+          title="Properti"
           value={stats.totalUnits}
           icon={<Building2 />}
-          color={{ bg: "bg-indigo-50", text: "text-indigo-600" }}
+          color={{ bg: "bg-primary/5", text: "text-primary" }}
           loading={loading}
+          trend="+2%"
         />
         <StatCard
-          title="Status Ready"
+          title="Ready Unit"
           value={stats.available}
           icon={<CheckCircle />}
           color={{ bg: "bg-emerald-50", text: "text-emerald-600" }}
           loading={loading}
         />
         <StatCard
-          title="Total Prospek"
+          title="Total Leads"
           value={stats.totalLeads}
           icon={<Users />}
-          color={{ bg: "bg-sky-50", text: "text-sky-600" }}
+          color={{ bg: "bg-blue-50", text: "text-blue-600" }}
           loading={loading}
+          trend="+12%"
         />
         <StatCard
-          title="Jasa Agency"
+          title="Services"
           value={stats.totalServices}
           icon={<Briefcase />}
           color={{ bg: "bg-amber-50", text: "text-amber-600" }}
           loading={loading}
         />
         <StatCard
-          title="Case Studies"
+          title="Portfolio"
           value={stats.totalPortfolio}
           icon={<Layers />}
           color={{ bg: "bg-rose-50", text: "text-rose-600" }}
           loading={loading}
         />
         <StatCard
-          title="Closing Rate"
+          title="Closing"
           value={`${((stats.sold / (stats.totalUnits || 1)) * 100).toFixed(0)}%`}
           icon={<TrendingUp />}
-          color={{ bg: "bg-violet-50", text: "text-violet-600" }}
+          color={{ bg: "bg-accent/10", text: "text-accent" }}
           loading={loading}
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
-          {/* Grafik Perolehan Leads */}
-          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
-                <TrendingUp size={20} />
+      <div className="grid lg:grid-cols-12 gap-8">
+        {/* --- MAIN CHART --- */}
+        <div className="lg:col-span-8">
+          <div className="bg-white p-8 rounded-[bento] border border-slate-100 shadow-premium h-full">
+            <div className="flex items-center justify-between mb-10">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-primary">
+                  <TrendingUp size={24} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-primary tracking-tight">
+                    Performa Inbound
+                  </h2>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    Growth 7 Hari Terakhir
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className="font-black text-[#0F1F4A] tracking-tight">
-                  Performa Inbound
-                </h2>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                  Leads 7 Hari Terakhir
-                </p>
-              </div>
+              <select className="bg-slate-50 border-none rounded-xl text-xs font-bold px-4 py-2 outline-none focus:ring-2 focus:ring-primary/5">
+                <option>Minggu Ini</option>
+                <option>Minggu Lalu</option>
+              </select>
             </div>
-            <div className="h-72 w-full">
+
+            <div className="h-[340px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData}>
                   <CartesianGrid
                     strokeDasharray="3 3"
                     vertical={false}
-                    stroke="#f1f5f9"
+                    stroke="#f8fafc"
                   />
                   <XAxis
                     dataKey="name"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 600 }}
-                    dy={10}
+                    tick={{ fill: "#94a3b8", fontSize: 11, fontWeight: 600 }}
+                    dy={15}
                   />
                   <YAxis
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 600 }}
+                    tick={{ fill: "#94a3b8", fontSize: 11, fontWeight: 600 }}
                   />
                   <Tooltip
-                    cursor={{ fill: "#f8fafc" }}
+                    cursor={{ fill: "#f8fafc", radius: 8 }}
                     contentStyle={{
-                      borderRadius: "16px",
+                      borderRadius: "12px",
                       border: "none",
-                      boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
-                      fontWeight: "bold",
+                      boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1)",
+                      padding: "12px",
                     }}
                   />
-                  <Bar dataKey="value" radius={[8, 8, 0, 0]} barSize={32}>
+                  <Bar dataKey="value" radius={[6, 6, 6, 6]} barSize={40}>
                     {chartData.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
@@ -293,104 +307,106 @@ export default function AdminDashboard() {
               </ResponsiveContainer>
             </div>
           </div>
-
-          {/* Quick Shortcuts */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Link
-              to="/admin/portfolio"
-              className="group bg-[#0F1F4A] p-6 rounded-3xl text-white flex items-center justify-between transition-all hover:bg-black"
-            >
-              <div className="space-y-1">
-                <h3 className="text-lg font-black tracking-tight text-[#FF3B3B]">
-                  Update Portofolio
-                </h3>
-                <p className="text-slate-400 text-xs">
-                  Tambah Case Study terbaru.
-                </p>
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-[#FF3B3B] transition-colors">
-                <PlusCircle size={20} />
-              </div>
-            </Link>
-            <Link
-              to="/admin/services"
-              className="group bg-white p-6 rounded-3xl border border-slate-100 flex items-center justify-between transition-all hover:border-[#FF3B3B] shadow-sm"
-            >
-              <div className="space-y-1">
-                <h3 className="text-lg font-black tracking-tight text-[#0F1F4A]">
-                  Kelola Layanan
-                </h3>
-                <p className="text-slate-400 text-xs">
-                  Optimasi paket jasa agency.
-                </p>
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-[#F8FAFC] flex items-center justify-center text-slate-400 group-hover:bg-[#FF3B3B] group-hover:text-white transition-all">
-                <ArrowRight size={20} />
-              </div>
-            </Link>
-          </div>
         </div>
 
-        {/* Sidebar: Recent Leads */}
-        <div className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm flex flex-col">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-[#FF3B3B]/10 text-[#FF3B3B] flex items-center justify-center">
-              <Users size={20} />
+        {/* --- RECENT LEADS SIDEBAR --- */}
+        <div className="lg:col-span-4">
+          <div className="bg-white p-8 rounded-[bento] border border-slate-100 shadow-premium h-full flex flex-col">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-accent/10 text-accent flex items-center justify-center">
+                  <MessageSquare size={20} />
+                </div>
+                <h2 className="text-lg font-bold text-primary tracking-tight">
+                  Leads Baru
+                </h2>
+              </div>
+              <Link
+                to="/admin/leads"
+                className="p-2 hover:bg-slate-50 rounded-lg transition-colors text-slate-400"
+              >
+                <ArrowUpRight size={20} />
+              </Link>
             </div>
-            <div>
-              <h2 className="font-black text-[#0F1F4A] tracking-tight">
-                Leads Masuk
-              </h2>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                Update Real-time
-              </p>
-            </div>
-          </div>
 
-          <div className="flex-1 space-y-4">
-            {recentLeads.length > 0 ? (
-              recentLeads.map((lead) => (
+            <div className="space-y-5 flex-1">
+              {recentLeads.map((lead) => (
                 <div
                   key={lead.id}
-                  className="group p-4 rounded-2xl bg-[#F8FAFC] border border-transparent hover:border-[#FF3B3B]/20 hover:bg-white transition-all flex items-center gap-4"
+                  className="group p-4 rounded-2xl bg-slate-50/50 border border-transparent hover:border-slate-200 hover:bg-white transition-all duration-300 flex items-center gap-4"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-[#0F1F4A] font-black text-sm group-hover:bg-[#0F1F4A] group-hover:text-white transition-all">
-                    {(lead.name || "U").charAt(0).toUpperCase()}
+                  <div className="w-11 h-11 rounded-xl bg-white shadow-sm flex items-center justify-center text-primary font-bold text-sm border border-slate-100 group-hover:bg-primary group-hover:text-white transition-colors">
+                    {lead.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-[#0F1F4A] truncate text-sm">
+                    <p className="font-bold text-primary truncate text-sm tracking-tight">
                       {lead.name}
                     </p>
-                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">
+                    <p className="text-[10px] text-slate-400 font-medium uppercase mt-0.5">
                       {new Date(lead.created_at).toLocaleDateString("id-ID", {
-                        day: "numeric",
+                        day: "2-digit",
                         month: "short",
-                      })}
+                      })}{" "}
+                      • Inbound Lead
                     </p>
                   </div>
                   <a
                     href={`https://wa.me/${lead.phone}`}
                     target="_blank"
-                    className="w-8 h-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all"
+                    className="w-9 h-9 rounded-lg bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20 hover:scale-110 transition-transform"
                   >
-                    <span className="text-[8px] font-black">WA</span>
+                    <MessageSquare size={16} />
                   </a>
                 </div>
-              ))
-            ) : (
-              <p className="text-center text-slate-400 py-10 text-xs font-bold uppercase tracking-widest">
-                Belum ada leads.
-              </p>
-            )}
-          </div>
+              ))}
+            </div>
 
-          <Link
-            to="/admin/leads"
-            className="mt-8 py-4 bg-[#F8FAFC] text-[#0F1F4A] rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#0F1F4A] hover:text-white transition-all text-center"
-          >
-            Semua Leads
-          </Link>
+            <Link
+              to="/admin/leads"
+              className="mt-10 w-full py-4 bg-slate-50 hover:bg-primary hover:text-white text-primary rounded-xl font-bold text-[10px] uppercase tracking-[0.2em] transition-all text-center border border-slate-100"
+            >
+              Lihat Semua Aktivitas
+            </Link>
+          </div>
         </div>
+      </div>
+
+      {/* --- QUICK ACTION BANNER --- */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Link
+          to="/admin/portfolio"
+          className="group p-8 rounded-[bento] bg-primary text-white flex items-center justify-between overflow-hidden shadow-premium relative"
+        >
+          <div className="absolute right-0 top-0 w-32 h-32 bg-accent/20 rounded-full blur-3xl -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
+          <div className="relative z-10">
+            <h3 className="text-2xl font-bold tracking-tight mb-2">
+              Update Case Study
+            </h3>
+            <p className="text-slate-400 text-sm font-medium">
+              Tambah keberhasilan baru ke landing page.
+            </p>
+          </div>
+          <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-xl flex items-center justify-center group-hover:bg-accent transition-all duration-500 shadow-xl">
+            <PlusCircle size={28} />
+          </div>
+        </Link>
+
+        <Link
+          to="/admin/property"
+          className="group p-8 rounded-[bento] bg-white border border-slate-100 flex items-center justify-between overflow-hidden shadow-premium hover:shadow-premium-hover transition-all duration-500 relative"
+        >
+          <div className="relative z-10">
+            <h3 className="text-2xl font-bold text-primary tracking-tight mb-2">
+              Kelola Inventory
+            </h3>
+            <p className="text-slate-500 text-sm font-medium">
+              Update status unit properti secara real-time.
+            </p>
+          </div>
+          <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-sm border border-slate-100">
+            <ArrowRight size={28} />
+          </div>
+        </Link>
       </div>
     </div>
   );

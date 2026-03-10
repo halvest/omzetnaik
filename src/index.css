@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Poppins:wght@600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:wght@600;700;800;900&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -6,82 +6,99 @@
 
 @layer base {
   :root {
-    --primary: #0f1f4a;
-    --accent: #ff3b3b;
-    --bg-soft: #f8fafc;
+    /* Gunakan HSL/RGB untuk fleksibilitas opasitas di utility classes */
+    --primary: 15, 31, 74; /* #0f1f4a */
+    --accent: 255, 59, 59; /* #ff3b3b */
+    --bg-soft: 248, 250, 252; /* #f8fafc */
   }
 
   html {
-    @apply scroll-smooth;
+    @apply scroll-smooth selection:bg-red-100 selection:text-red-600;
   }
 
   body {
-    @apply font-sans text-[#0F1F4A] bg-white antialiased overflow-x-hidden;
+    /* Inter terlihat lebih premium dengan tracking-tight */
+    @apply font-sans text-slate-900 bg-white antialiased overflow-x-hidden tracking-tight;
   }
 
-  .container {
-    @apply mx-auto px-6 md:px-12 lg:px-20 max-w-7xl;
-  }
-
+  /* Typography Refinement: Linear/Stripe Style */
   h1,
   h2,
   h3,
   h4,
   h5,
   h6 {
-    @apply font-heading tracking-tighter leading-tight;
+    @apply font-heading tracking-tighter leading-[1.1] text-[#0F1F4A];
+  }
+
+  p {
+    @apply leading-relaxed text-slate-600;
   }
 }
 
 @layer components {
-  /* Button Primary */
+  /* BUTTON REFINEMENT: 
+     - Menghilangkan uppercase berlebihan agar lebih modern (Silicon Valley style)
+     - Menggunakan padding yang lebih proporsional
+     - Shadow yang lebih subtle
+  */
   .btn-primary {
-    @apply bg-accent hover:bg-[#E22F2F] text-white px-8 py-4 rounded-2xl 
-           font-black text-[10px] uppercase tracking-[0.2em] transition-all 
-           duration-300 transform active:scale-95 shadow-xl shadow-red-600/20 
-           flex items-center justify-center gap-3 w-full sm:w-auto;
+    @apply bg-accent hover:bg-[#E22F2F] text-white px-7 py-3.5 rounded-xl 
+           font-semibold text-[15px] transition-all duration-300 
+           transform active:scale-[0.97] shadow-lg shadow-red-500/25
+           flex items-center justify-center gap-2.5 w-full sm:w-auto;
   }
 
   .section-padding {
-    @apply py-24 md:py-32 lg:py-44;
+    @apply py-20 md:py-28 lg:py-36;
   }
 
-  /* --- PERBAIKAN CARD PREMIUM --- 
-     Gunakan shadow-soft-premium agar tidak ngotak
+  /* CARD PREMIUM REFINEMENT:
+     - Radius 3.5rem terlalu ekstrem untuk SaaS modern, disesuaikan ke 2rem - 2.5rem 
+     - Border menggunakan opasitas agar menyatu dengan background
   */
   .card-premium {
-    @apply bg-white border border-slate-100 rounded-[3.5rem] p-10
-           transition-all duration-700 ease-out flex flex-col h-full
-           shadow-soft-premium hover:shadow-hover-premium hover:-translate-y-2;
+    @apply bg-white border border-slate-200/60 rounded-[2rem] p-8 md:p-10
+           transition-all duration-500 ease-[cubic-bezier(0.2,0,0,1)] flex flex-col h-full
+           shadow-soft-premium hover:shadow-hover-premium hover:-translate-y-1.5;
+  }
+
+  /* Glassmorphism Effect untuk Navbar atau Feature Card */
+  .glass-effect {
+    @apply bg-white/70 backdrop-blur-xl border border-white/20;
   }
 }
 
 @layer utilities {
   /* SHADOW OPTIMIZATION:
-     Menggunakan warna Navy (#0F1F4A) transparan, bukan hitam.
-     Nilai spread negatif (angka terakhir) membuat bayangan tidak 'ngotak' di pinggir.
+     Menggunakan layering shadow (Shadow Umbra & Penumbra) untuk kedalaman natural
   */
   .shadow-soft-premium {
     box-shadow:
-      0 10px 30px -10px rgba(15, 31, 74, 0.08),
-      0 20px 40px -15px rgba(15, 31, 74, 0.05);
+      0 1px 2px rgba(15, 31, 74, 0.05),
+      0 8px 24px -8px rgba(15, 31, 74, 0.08);
   }
 
   .shadow-hover-premium {
     box-shadow:
-      0 30px 60px -15px rgba(15, 31, 74, 0.15),
-      0 15px 30px -10px rgba(15, 31, 74, 0.1);
+      0 2px 4px rgba(15, 31, 74, 0.02),
+      0 20px 48px -12px rgba(15, 31, 74, 0.12);
   }
 
-  /* Snapping & Scroll Guidance */
-  .snap-x-mandatory {
-    scroll-snap-type: x mandatory;
-    @apply flex gap-8 overflow-x-auto px-6 pb-14 pt-4; /* Tambah pt & pb agar shadow tidak terpotong */
+  /* Modern Gradient Text */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-b from-slate-900 to-slate-500;
   }
 
-  .snap-center-card {
-    scroll-snap-align: center;
-    @apply min-w-[85vw] md:min-w-[420px] flex-shrink-0;
+  /* Masking untuk Smooth Scroll Edge */
+  .mask-fade-edge {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 5%,
+      black 95%,
+      transparent
+    );
   }
 
   .no-scrollbar::-webkit-scrollbar {
@@ -90,9 +107,5 @@
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
-  }
-
-  .text-shadow-sm {
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   }
 }

@@ -1,9 +1,13 @@
 // src/components/FAQ.tsx
 import React, { useState } from "react";
-import { ChevronDown, HelpCircle, MessageCircle } from "lucide-react";
+import {
+  ChevronDown,
+  HelpCircle,
+  MessageCircle,
+  ArrowRight,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// ✨ Data FAQ diperbarui untuk konteks Digital Marketing Agency
 const faqData = [
   {
     question: "Bagaimana cara kerja sistem 'Omzet Naik' ini?",
@@ -44,21 +48,25 @@ interface FAQItemProps {
 }
 
 const FAQItem = ({ item, isOpen, onClick }: FAQItemProps) => (
-  <div className="border-b border-border last:border-0">
+  <div className="border-b border-slate-100 last:border-0">
     <button
       onClick={onClick}
-      className={`w-full flex justify-between items-center text-left gap-4 py-7 transition-all ${
-        isOpen ? "text-primary" : "text-primary hover:text-secondary"
-      }`}
+      className="w-full flex justify-between items-center text-left gap-6 py-8 transition-all group"
     >
-      <h3 className="text-lg font-heading font-bold leading-tight">
+      <h3
+        className={`text-lg lg:text-xl font-bold leading-tight transition-colors duration-300 ${
+          isOpen ? "text-accent" : "text-primary group-hover:text-accent"
+        }`}
+      >
         {item.question}
       </h3>
       <motion.div
         animate={{ rotate: isOpen ? 180 : 0 }}
-        transition={{ duration: 0.3 }}
-        className={`flex-shrink-0 p-1.5 rounded-xl ${
-          isOpen ? "bg-accent text-white" : "bg-neutral-soft text-slate-400"
+        transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
+        className={`flex-shrink-0 p-2 rounded-full transition-colors duration-300 ${
+          isOpen
+            ? "bg-accent text-white"
+            : "bg-slate-50 text-slate-400 group-hover:bg-primary group-hover:text-white"
         }`}
       >
         <ChevronDown size={20} />
@@ -70,12 +78,11 @@ const FAQItem = ({ item, isOpen, onClick }: FAQItemProps) => (
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: "auto", opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.3, ease: "easeInOut" }}
+          transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
           className="overflow-hidden"
         >
-          <div className="pb-8 pr-4">
-            <div className="w-12 h-1 bg-accent/20 mb-4 rounded-full"></div>
-            <p className="text-slate-600 leading-relaxed font-sans text-base">
+          <div className="pb-8 pr-6">
+            <p className="text-slate-500 leading-relaxed font-medium text-base lg:text-lg italic border-l-2 border-accent/20 pl-6">
               {item.answer}
             </p>
           </div>
@@ -88,78 +95,107 @@ const FAQItem = ({ item, isOpen, onClick }: FAQItemProps) => (
 export default function FAQ() {
   const [activeIndex, setActiveIndex] = useState<number | null>(0);
 
-  const handleItemClick = (index: number) => {
-    setActiveIndex(activeIndex === index ? null : index);
-  };
-
   return (
     <section
       id="faq"
-      className="py-20 md:py-32 bg-white relative overflow-hidden"
+      className="py-24 lg:py-40 bg-white relative overflow-hidden font-sans"
     >
-      {/* Background Decor */}
-      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:32px_32px] opacity-20" />
+      {/* Refined Pattern Background */}
+      <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:40px_40px] opacity-30" />
 
-      <div className="container mx-auto px-6 relative z-10">
-        <div className="grid lg:grid-cols-12 gap-16">
-          {/* Kolom Kiri: Intro Agensi */}
+      <div className="container relative z-10">
+        <div className="grid lg:grid-cols-12 gap-16 lg:gap-24">
+          {/* LEFT COLUMN: Sticky Intro */}
           <div className="lg:col-span-5 lg:sticky lg:top-32 h-fit">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-neutral-soft border border-border text-primary text-[10px] font-black uppercase tracking-[0.2em] mb-6">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-primary text-[10px] font-bold uppercase tracking-[0.2em] mb-8"
+            >
               <HelpCircle size={14} className="text-accent" />
               <span>Knowledge Base</span>
-            </div>
-            <h2 className="text-4xl md:text-6xl font-heading font-extrabold text-primary mb-6 leading-[1.1]">
+            </motion.div>
+
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1, duration: 0.8, ease: [0.2, 0, 0, 1] }}
+              className="text-5xl md:text-6xl font-bold text-primary mb-8 leading-[1.05] tracking-tighter"
+            >
               Hal yang Sering <br />
-              <span className="text-accent italic">Ditanyakan.</span>
-            </h2>
-            <p className="text-slate-500 text-lg mb-10 leading-relaxed font-sans">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-red-400 italic">
+                Ditanyakan.
+              </span>
+            </motion.h2>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="text-slate-500 text-lg lg:text-xl font-medium mb-12 leading-relaxed"
+            >
               Kami percaya transparansi adalah kunci kemitraan. Berikut adalah
               ringkasan informasi untuk membantu Anda memahami bagaimana
-              OmzetNaik.id mempercepat pertumbuhan bisnis Anda.
-            </p>
+              strategi kami mempercepat pertumbuhan bisnis Anda.
+            </motion.p>
 
-            {/* Desktop CTA Card */}
-            <div className="hidden lg:block bg-primary p-10 rounded-[2.5rem] shadow-2xl shadow-primary/20 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full -mr-16 -mt-16 blur-2xl" />
-              <p className="text-xl font-heading font-bold text-white mb-3 relative z-10">
+            {/* Premium CTA Card (Vercel Style) */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="hidden lg:block bg-primary p-10 rounded-[bento] shadow-premium relative overflow-hidden group"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-accent/20 transition-colors" />
+              <p className="text-2xl font-bold text-white mb-4 relative z-10 tracking-tight">
                 Masih butuh penjelasan?
               </p>
-              <p className="text-sm text-slate-300 mb-8 relative z-10 font-sans">
+              <p className="text-slate-400 mb-10 relative z-10 font-medium leading-relaxed">
                 Tim strategist kami siap memberikan sesi brainstorming gratis
-                selama 15 menit untuk bisnis Anda.
+                selama 15 menit untuk membedah potensi bisnis Anda.
               </p>
               <a
                 href="#contact"
-                className="btn-primary w-full py-4 text-base relative z-10"
+                className="btn-primary w-full !py-4 text-sm flex items-center justify-center gap-3 shadow-accent-glow"
               >
-                Tanya Lewat WhatsApp
+                Tanya Lewat WhatsApp <ArrowRight size={18} />
               </a>
-            </div>
+            </motion.div>
           </div>
 
-          {/* Kolom Kanan: List FAQ */}
+          {/* RIGHT COLUMN: FAQ List */}
           <div className="lg:col-span-7">
-            <div className="bg-white rounded-[3rem] border border-border p-8 md:p-12 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500">
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="bg-white rounded-[bento] border border-slate-100 p-8 md:p-14 shadow-premium hover:shadow-premium-hover transition-all duration-700"
+            >
               {faqData.map((item, index) => (
                 <FAQItem
                   key={index}
                   item={item}
                   isOpen={activeIndex === index}
-                  onClick={() => handleItemClick(index)}
+                  onClick={() =>
+                    setActiveIndex(activeIndex === index ? null : index)
+                  }
                 />
               ))}
-            </div>
+            </motion.div>
 
             {/* Mobile CTA */}
             <div className="mt-12 text-center lg:hidden">
-              <p className="text-slate-500 text-sm mb-4 font-sans">
+              <p className="text-slate-500 text-base mb-6 font-medium">
                 Belum menemukan jawaban yang dicari?
               </p>
               <a
                 href="#contact"
-                className="inline-flex items-center gap-2 text-accent font-bold border-b-2 border-accent/20 hover:border-accent transition-all pb-1 uppercase tracking-widest text-xs"
+                className="btn-primary w-full !py-4 rounded-2xl flex items-center justify-center gap-3 shadow-accent-glow"
               >
-                <MessageCircle size={16} /> Konsultasi Sekarang
+                <MessageCircle size={20} /> Konsultasi Sekarang
               </a>
             </div>
           </div>
