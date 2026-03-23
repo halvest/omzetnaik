@@ -12,22 +12,44 @@ import {
   ArrowLeft,
   Loader2,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [sessionChecked, setSessionChecked] = useState(false);
 
+  // Fungsi Helper untuk cek Role di Database
+  const checkUserRole = async (userId: string) => {
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", userId)
+      .single();
+
+    if (profileError || profile?.role !== "admin") {
+      return false;
+    }
+    return true;
+  };
+
   useEffect(() => {
     const checkSession = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      if (session?.user?.user_metadata?.role === "admin") {
-        navigate("/admin", { replace: true });
-      } else {
-        setSessionChecked(true);
+
+      if (session) {
+        const isAdmin = await checkUserRole(session.user.id);
+        if (isAdmin) {
+          navigate("/admin", { replace: true });
+          return;
+        } else {
+          // Jika bukan admin, tendang keluar
+          await supabase.auth.signOut();
+        }
       }
+      setSessionChecked(true);
     };
     checkSession();
   }, [navigate]);
@@ -37,16 +59,22 @@ export default function LoginPage() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN" && session) {
-        if (session.user.user_metadata?.role === "admin") {
+        const isAdmin = await checkUserRole(session.user.id);
+
+        if (isAdmin) {
+          toast.success("Access Granted: Admin Terminal");
           navigate("/admin", { replace: true });
         } else {
           setError(
-            "Akses ditolak. Akun Anda tidak memiliki izin Administrator OmzetNaik.",
+            "Akses ditolak. Terminal ini hanya untuk Administrator OmzetNaik.",
           );
+          toast.error("Unauthorized Access");
+
+          // Beri jeda agar user bisa baca error sebelum ditedang
           setTimeout(async () => {
             await supabase.auth.signOut();
             setError(null);
-          }, 3500);
+          }, 3000);
         }
       }
     });
@@ -66,11 +94,9 @@ export default function LoginPage() {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-slate-50 p-6 relative overflow-hidden font-sans">
-      {/* Refined Background Ambiance */}
       <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-accent/5 rounded-full blur-[100px] pointer-events-none" />
 
-      {/* Navigation Top */}
       <div className="absolute top-8 left-8">
         <button
           onClick={() => navigate("/")}
@@ -87,15 +113,13 @@ export default function LoginPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.2, 0, 0, 1] }}
-        className="w-full max-w-md bg-white rounded-[bento] shadow-premium border border-slate-100 overflow-hidden relative z-10"
+        className="w-full max-w-md bg-white rounded-[2.5rem] shadow-premium border border-slate-100 overflow-hidden relative z-10"
       >
-        {/* Header Section */}
         <div className="p-12 pb-8 text-center">
           <motion.div
-            whileHover={{ rotate: 0 }}
             initial={{ rotate: 12 }}
-            className="mx-auto w-16 h-16 bg-accent text-white flex items-center justify-center rounded-2xl mb-8 shadow-accent-glow transition-transform"
+            whileHover={{ rotate: 0 }}
+            className="mx-auto w-16 h-16 bg-accent text-white flex items-center justify-center rounded-2xl mb-8 shadow-accent-glow"
           >
             <Target size={32} strokeWidth={2.5} />
           </motion.div>
@@ -114,7 +138,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Supabase Auth UI Customization */}
         <div className="px-12 pb-10">
           <Auth
             supabaseClient={supabase}
@@ -127,29 +150,17 @@ export default function LoginPage() {
                     brandAccent: "#FF3B3B",
                     inputBackground: "#F8FAFC",
                     inputBorder: "#E2E8F0",
-                    inputBorderFocus: "#0F1F4A",
-                    inputText: "#0F172A",
-                    inputLabelText: "#64748B",
                   },
                   radii: {
                     borderRadiusButton: "0.75rem",
                     borderRadiusInput: "0.75rem",
                   },
-                  fonts: {
-                    bodyFontFamily: `'Inter', sans-serif`,
-                    buttonFontFamily: `'Inter', sans-serif`,
-                    inputFontFamily: `'Inter', sans-serif`,
-                    labelFontFamily: `'Inter', sans-serif`,
-                  },
                 },
               },
               className: {
                 button:
-                  "font-bold tracking-[0.1em] uppercase text-[11px] py-4 shadow-md hover:shadow-lg transition-all",
-                input:
-                  "font-medium text-sm p-4 border-slate-200 focus:ring-4 focus:ring-primary/5",
-                label:
-                  "font-bold text-[10px] uppercase tracking-[0.1em] text-slate-500 mb-2",
+                  "font-bold tracking-[0.1em] uppercase text-[11px] py-4 transition-all",
+                input: "font-medium text-sm p-4",
               },
             }}
             providers={[]}
@@ -158,7 +169,6 @@ export default function LoginPage() {
           />
         </div>
 
-        {/* Alerts / Notifications */}
         <AnimatePresence>
           {error && (
             <motion.div
@@ -175,7 +185,6 @@ export default function LoginPage() {
           )}
         </AnimatePresence>
 
-        {/* Security Footer */}
         <div className="bg-slate-50 py-5 text-center border-t border-slate-100">
           <div className="flex items-center justify-center gap-3 text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">
             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />

@@ -9,7 +9,6 @@ import {
   Building2,
   ArrowRight,
   PlusCircle,
-  Clock,
   Briefcase,
   Layers,
   ArrowUpRight,
@@ -28,6 +27,7 @@ import {
 } from "recharts";
 import { motion } from "framer-motion";
 
+// --- TYPES ---
 interface Lead {
   created_at: string;
   id: string;
@@ -36,8 +36,22 @@ interface Lead {
   type?: string;
 }
 
+interface DashboardStats {
+  totalUnits: number;
+  available: number;
+  sold: number;
+  totalLeads: number;
+  totalServices: number;
+  totalPortfolio: number;
+}
+
+// --- SUB-COMPONENTS ---
 const StatCard = ({ title, value, icon, color, loading, trend }: any) => (
-  <div className="bg-white p-6 rounded-[2rem] border border-slate-100 flex flex-col gap-4 shadow-premium hover:shadow-premium-hover transition-all duration-500 group relative overflow-hidden">
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="bg-white p-6 rounded-[2rem] border border-slate-100 flex flex-col gap-4 shadow-premium hover:shadow-premium-hover transition-all duration-500 group relative overflow-hidden"
+  >
     <div
       className={`absolute -right-4 -top-4 w-20 h-20 rounded-full opacity-[0.03] transition-transform group-hover:scale-150 duration-700 ${color.bg}`}
     />
@@ -71,11 +85,11 @@ const StatCard = ({ title, value, icon, color, loading, trend }: any) => (
         </p>
       )}
     </div>
-  </div>
+  </motion.div>
 );
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<DashboardStats>({
     totalUnits: 0,
     available: 0,
     sold: 0,
@@ -95,94 +109,100 @@ export default function AdminDashboard() {
     return "Selamat Malam";
   }, []);
 
+  // OPTIMASI 1: Centralized Fetching dengan Error Handling yang lebih baik
   useEffect(() => {
     const fetchDashboardData = async () => {
       setLoading(true);
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
       try {
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        // Menggunakan Promise.all untuk eksekusi paralel (High Performance)
+        const [props, leadsCount, recent, daily, services, portfolio] =
+          await Promise.all([
+            supabase.from("properties").select("status"),
+            supabase.from("leads").select("*", { count: "exact", head: true }),
+            supabase
+              .from("leads")
+              .select("*")
+              .order("created_at", { ascending: false })
+              .limit(5),
+            supabase
+              .from("leads")
+              .select("created_at")
+              .gte("created_at", sevenDaysAgo.toISOString()),
+            supabase
+              .from("services")
+              .select("*", { count: "exact", head: true }),
+            supabase
+              .from("portfolios")
+              .select("*", { count: "exact", head: true }),
+          ]);
 
-        const [
-          propsRes,
-          leadsRes,
-          recentLeadsRes,
-          dailyLeadsRes,
-          servicesRes,
-          portfolioRes,
-        ] = await Promise.all([
-          supabase.from("properties").select("status"),
-          supabase.from("leads").select("*", { count: "exact", head: true }),
-          supabase
-            .from("leads")
-            .select("*")
-            .order("created_at", { ascending: false })
-            .limit(5),
-          supabase
-            .from("leads")
-            .select("created_at")
-            .gte("created_at", sevenDaysAgo.toISOString()),
-          supabase.from("services").select("*", { count: "exact", head: true }),
-          supabase
-            .from("portfolios")
-            .select("*", { count: "exact", head: true }),
-        ]);
+        const properties = props.data || [];
 
-        const properties = propsRes.data || [];
         setStats({
           totalUnits: properties.length,
           available: properties.filter((p) =>
             ["active", "pending"].includes(p.status),
           ).length,
           sold: properties.filter((p) => p.status === "sold").length,
-          totalLeads: leadsRes.count || 0,
-          totalServices: servicesRes.count || 0,
-          totalPortfolio: portfolioRes.count || 0,
+          totalLeads: leadsCount.count || 0,
+          totalServices: services.count || 0,
+          totalPortfolio: portfolio.count || 0,
         });
 
-        setRecentLeads((recentLeadsRes.data as Lead[]) || []);
-        setDailyLeads(dailyLeadsRes.data || []);
+        setRecentLeads((recent.data as Lead[]) || []);
+        setDailyLeads(daily.data || []);
       } catch (error) {
-        console.error("Dashboard Error:", error);
+        console.error("Dashboard Fetch Error:", error);
       } finally {
         setLoading(false);
       }
     };
+
     fetchDashboardData();
   }, []);
 
+  // OPTIMASI 2: Chart Data Processing yang lebih efisien
   const chartData = useMemo(() => {
-    const data = [];
-    for (let i = 6; i >= 0; i--) {
+    return Array.from({ length: 7 }, (_, i) => {
       const date = new Date();
-      date.setDate(date.getDate() - i);
-      const isoDate = date.toISOString().slice(0, 10);
+      date.setDate(date.getDate() - (6 - i));
+      const isoDate = date.toISOString().split("T")[0];
+
       const count = dailyLeads.filter((l) =>
         l.created_at.startsWith(isoDate),
       ).length;
-      data.push({
+
+      return {
         name: date.toLocaleDateString("id-ID", { weekday: "short" }),
         value: count,
-      });
-    }
-    return data;
+        fullDate: isoDate,
+      };
+    });
   }, [dailyLeads]);
 
   return (
     <div className="space-y-10 font-sans pb-10">
-      {/* --- TOP HEADER --- */}
+      {/* --- HEADER --- */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-        <div>
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+        >
           <h1 className="text-4xl font-bold text-primary tracking-tighter">
             {greeting}, Hasyim Adani
           </h1>
           <p className="text-slate-500 font-medium mt-1">
-            Pantau pertumbuhan ekosistem bisnis dan performa inbound hari ini.
+            Ekosistem OmzetNaik.id terpantau stabil hari ini.
           </p>
-        </div>
+        </motion.div>
+
         <div className="flex items-center gap-3 bg-white px-5 py-3 rounded-2xl border border-slate-100 shadow-sm">
           <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-r border-slate-100 pr-3">
-            Live Feed
+            Live Terminal
           </span>
           <p className="text-xs font-bold text-primary">
             {new Date().toLocaleDateString("id-ID", {
@@ -194,7 +214,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* --- KPI STATS GRID --- */}
+      {/* --- STATS GRID --- */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
         <StatCard
           title="Properti"
@@ -205,14 +225,14 @@ export default function AdminDashboard() {
           trend="+2%"
         />
         <StatCard
-          title="Ready Unit"
+          title="Ready"
           value={stats.available}
           icon={<CheckCircle />}
           color={{ bg: "bg-emerald-50", text: "text-emerald-600" }}
           loading={loading}
         />
         <StatCard
-          title="Total Leads"
+          title="Leads"
           value={stats.totalLeads}
           icon={<Users />}
           color={{ bg: "bg-blue-50", text: "text-blue-600" }}
@@ -234,7 +254,7 @@ export default function AdminDashboard() {
           loading={loading}
         />
         <StatCard
-          title="Closing"
+          title="Closing Rate"
           value={`${((stats.sold / (stats.totalUnits || 1)) * 100).toFixed(0)}%`}
           icon={<TrendingUp />}
           color={{ bg: "bg-accent/10", text: "text-accent" }}
@@ -242,37 +262,40 @@ export default function AdminDashboard() {
         />
       </div>
 
+      {/* --- CONTENT SECTION --- */}
       <div className="grid lg:grid-cols-12 gap-8">
-        {/* --- MAIN CHART --- */}
+        {/* CHART AREA */}
         <div className="lg:col-span-8">
           <div className="bg-white p-8 rounded-[bento] border border-slate-100 shadow-premium h-full">
             <div className="flex items-center justify-between mb-10">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-primary">
-                  <TrendingUp size={24} />
+              <div>
+                <h2 className="text-xl font-bold text-primary tracking-tight">
+                  Performa Inbound
+                </h2>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                  Aktivitas 7 Hari Terakhir
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-lg text-[10px] font-bold text-primary">
+                  <div className="w-2 h-2 bg-primary rounded-full" /> History
                 </div>
-                <div>
-                  <h2 className="text-xl font-bold text-primary tracking-tight">
-                    Performa Inbound
-                  </h2>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                    Growth 7 Hari Terakhir
-                  </p>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-accent/5 rounded-lg text-[10px] font-bold text-accent">
+                  <div className="w-2 h-2 bg-accent rounded-full" /> Today
                 </div>
               </div>
-              <select className="bg-slate-50 border-none rounded-xl text-xs font-bold px-4 py-2 outline-none focus:ring-2 focus:ring-primary/5">
-                <option>Minggu Ini</option>
-                <option>Minggu Lalu</option>
-              </select>
             </div>
 
             <div className="h-[340px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
+                <BarChart
+                  data={chartData}
+                  margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
+                >
                   <CartesianGrid
                     strokeDasharray="3 3"
                     vertical={false}
-                    stroke="#f8fafc"
+                    stroke="#f1f5f9"
                   />
                   <XAxis
                     dataKey="name"
@@ -289,9 +312,9 @@ export default function AdminDashboard() {
                   <Tooltip
                     cursor={{ fill: "#f8fafc", radius: 8 }}
                     contentStyle={{
-                      borderRadius: "12px",
+                      borderRadius: "16px",
                       border: "none",
-                      boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1)",
+                      boxShadow: "0 20px 25px -5px rgba(0,0,0,0.05)",
                       padding: "12px",
                     }}
                   />
@@ -309,18 +332,13 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* --- RECENT LEADS SIDEBAR --- */}
+        {/* RECENT LEADS AREA */}
         <div className="lg:col-span-4">
           <div className="bg-white p-8 rounded-[bento] border border-slate-100 shadow-premium h-full flex flex-col">
             <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-accent/10 text-accent flex items-center justify-center">
-                  <MessageSquare size={20} />
-                </div>
-                <h2 className="text-lg font-bold text-primary tracking-tight">
-                  Leads Baru
-                </h2>
-              </div>
+              <h2 className="text-lg font-bold text-primary tracking-tight">
+                Leads Baru
+              </h2>
               <Link
                 to="/admin/leads"
                 className="p-2 hover:bg-slate-50 rounded-lg transition-colors text-slate-400"
@@ -330,35 +348,43 @@ export default function AdminDashboard() {
             </div>
 
             <div className="space-y-5 flex-1">
-              {recentLeads.map((lead) => (
-                <div
-                  key={lead.id}
-                  className="group p-4 rounded-2xl bg-slate-50/50 border border-transparent hover:border-slate-200 hover:bg-white transition-all duration-300 flex items-center gap-4"
-                >
-                  <div className="w-11 h-11 rounded-xl bg-white shadow-sm flex items-center justify-center text-primary font-bold text-sm border border-slate-100 group-hover:bg-primary group-hover:text-white transition-colors">
-                    {lead.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-primary truncate text-sm tracking-tight">
-                      {lead.name}
-                    </p>
-                    <p className="text-[10px] text-slate-400 font-medium uppercase mt-0.5">
-                      {new Date(lead.created_at).toLocaleDateString("id-ID", {
-                        day: "2-digit",
-                        month: "short",
-                      })}{" "}
-                      • Inbound Lead
-                    </p>
-                  </div>
-                  <a
-                    href={`https://wa.me/${lead.phone}`}
-                    target="_blank"
-                    className="w-9 h-9 rounded-lg bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20 hover:scale-110 transition-transform"
+              {recentLeads.length > 0 ? (
+                recentLeads.map((lead) => (
+                  <div
+                    key={lead.id}
+                    className="group p-4 rounded-2xl bg-slate-50/50 border border-transparent hover:border-slate-200 hover:bg-white transition-all duration-300 flex items-center gap-4"
                   >
-                    <MessageSquare size={16} />
-                  </a>
+                    <div className="w-11 h-11 rounded-xl bg-white shadow-sm flex items-center justify-center text-primary font-bold text-sm border border-slate-100 group-hover:bg-primary group-hover:text-white transition-colors">
+                      {lead.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-primary truncate text-sm tracking-tight">
+                        {lead.name}
+                      </p>
+                      <p className="text-[10px] text-slate-400 font-medium uppercase mt-0.5">
+                        {new Date(lead.created_at).toLocaleDateString("id-ID", {
+                          day: "2-digit",
+                          month: "short",
+                        })}{" "}
+                        • Inbound
+                      </p>
+                    </div>
+                    <a
+                      href={`https://wa.me/${lead.phone}`}
+                      target="_blank"
+                      className="w-9 h-9 rounded-lg bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20 hover:scale-110 transition-transform"
+                    >
+                      <MessageSquare size={16} />
+                    </a>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-10">
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">
+                    Belum ada leads masuk
+                  </p>
                 </div>
-              ))}
+              )}
             </div>
 
             <Link
@@ -371,7 +397,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* --- QUICK ACTION BANNER --- */}
+      {/* --- QUICK ACTIONS --- */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Link
           to="/admin/portfolio"
@@ -397,10 +423,10 @@ export default function AdminDashboard() {
         >
           <div className="relative z-10">
             <h3 className="text-2xl font-bold text-primary tracking-tight mb-2">
-              Kelola Inventory
+              Inventory Properti
             </h3>
             <p className="text-slate-500 text-sm font-medium">
-              Update status unit properti secara real-time.
+              Update status unit secara real-time.
             </p>
           </div>
           <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-sm border border-slate-100">

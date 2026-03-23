@@ -140,4 +140,3 @@ export default function NotFoundPage() {
   );
 }
 
-// Catatan: Pastikan ikon 'ChevronRight' diimport dari 'lucide-react'

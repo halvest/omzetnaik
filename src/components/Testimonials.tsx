@@ -1,6 +1,5 @@
-// src/components/Testimonials.tsx
 import React from "react";
-import { Star, Quote } from "lucide-react";
+import { Star, Quote, Sparkles } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Autoplay } from "swiper/modules";
 import { motion } from "framer-motion";
@@ -13,43 +12,45 @@ const reviews = [
   {
     name: "Andi Wijaya",
     role: "CEO Sasmaya Residence",
-    text: "Sejak ditangani OmzetNaik.id, ROAS kami stabil di angka 5.4x. Leads yang masuk sangat berkualitas dan tim marketing kami kewalahan closing. Strategi Meta Ads-nya benar-benar tajam!",
+    text: "Sejak ditangani OmzetNaik.id, ROAS kami stabil di angka 5.4x. Leads yang masuk berkualitas dan tim marketing kami kewalahan closing.",
   },
   {
     name: "Rina Kusuma",
     role: "Marketing Manager Villa Jogja",
-    text: "Landing page yang dibuat sangat konversi-sentris. User experience-nya bagus dan integrasi ke WhatsApp-nya membuat kami tidak kehilangan satu prospek pun. Profesional dan responsif!",
+    text: "Landing page konversi-sentris. User experience bagus dan integrasi WhatsApp membuat kami tidak kehilangan satu prospek pun.",
   },
   {
     name: "Budi Santoso",
     role: "Owner Property Agent Jogja",
-    text: "Dominasi SEO kami di Google meningkat drastis dalam 3 bulan. Sekarang kami muncul di halaman pertama untuk kata kunci properti strategis. Partner digital marketing terbaik untuk skala bisnis kami.",
+    text: "Dominasi SEO di Google meningkat drastis dalam 3 bulan. Kami muncul di halaman pertama untuk kata kunci properti strategis.",
   },
   {
     name: "Ibu Maya",
     role: "Founder Lodji Svarga",
-    text: "Sangat puas dengan transparansi laporannya. Setiap rupiah budget iklan dijelaskan dengan data, bukan sekadar asumsi. Benar-benar fokus pada kenaikan omzet klien.",
+    text: "Sangat puas dengan transparansi laporannya. Setiap rupiah budget iklan dijelaskan dengan data, bukan sekadar asumsi.",
   },
 ];
 
 export default function Testimonials() {
   return (
-    <section className="py-24 lg:py-40 bg-slate-50 relative overflow-hidden font-sans">
-      {/* BACKGROUND AMBIANCE (Premium Polish) */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
-        <Quote className="absolute -top-10 -left-10 text-primary/[0.03] w-64 h-64 -rotate-12" />
-        <div className="absolute top-[20%] right-[-5%] w-96 h-96 bg-accent/5 rounded-full blur-[100px]" />
+    <section className="relative min-h-screen lg:h-screen flex items-center py-12 lg:py-0 bg-slate-50 overflow-hidden font-sans lg:max-h-[850px]">
+      {/* Background Decor */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20">
+        <Quote className="absolute -top-10 -left-10 text-primary/[0.05] w-64 h-64 -rotate-12" />
+        <div className="absolute top-[20%] right-[-5%] w-72 h-72 bg-accent/10 rounded-full blur-[100px]" />
       </div>
 
-      <div className="container relative z-10">
-        <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-24">
+      <div className="container relative z-10 px-6 mx-auto">
+        {/* --- HEADER SECTION --- */}
+        <div className="text-center max-w-3xl mx-auto mb-10 lg:mb-12">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 bg-white border border-slate-200 shadow-sm rounded-full mb-8"
+            className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 shadow-sm rounded-full mb-4"
           >
-            <span className="text-[10px] font-bold text-accent uppercase tracking-[0.2em]">
+            <Sparkles size={12} className="text-accent" />
+            <span className="text-[10px] font-black text-primary uppercase tracking-widest">
               Partner Success
             </span>
           </motion.div>
@@ -58,12 +59,14 @@ export default function Testimonials() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.1, duration: 0.8, ease: [0.2, 0, 0, 1] }}
-            className="text-4xl md:text-5xl lg:text-7xl font-bold text-primary mb-6 tracking-tighter leading-tight"
+            className="text-3xl md:text-5xl lg:text-6xl font-bold text-primary mb-4 tracking-tighter leading-tight"
           >
             Suara{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-red-400 italic">
-              Partner
+            <span className="relative inline-block">
+              <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-orange-400 italic">
+                Partner&nbsp; 
+              </span>
+              <div className="absolute -bottom-1 left-0 w-full h-2 bg-accent/10 -z-10 rounded-full" />
             </span>{" "}
             Kami
           </motion.h2>
@@ -72,65 +75,58 @@ export default function Testimonials() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="text-slate-500 text-lg lg:text-xl font-medium max-w-2xl mx-auto leading-relaxed"
+            className="text-slate-500 text-sm lg:text-lg font-medium max-w-2xl mx-auto leading-relaxed"
           >
             Keberhasilan kami diukur dari seberapa besar pertumbuhan bisnis yang
             Anda capai melalui strategi digital kami.
           </motion.p>
         </div>
 
-        {/* SWIPER CAROUSEL (Bento-style Cards) */}
+        {/* --- SWIPER CAROUSEL --- */}
         <Swiper
           modules={[Pagination, Autoplay]}
-          spaceBetween={32}
+          spaceBetween={20}
           slidesPerView={1}
           pagination={{ clickable: true, dynamicBullets: true }}
-          autoplay={{
-            delay: 7000,
-            disableOnInteraction: false,
-          }}
+          autoplay={{ delay: 5000, disableOnInteraction: false }}
           breakpoints={{
             768: { slidesPerView: 2 },
             1024: { slidesPerView: 3 },
           }}
-          className="pb-20 !px-4"
+          className="pb-16 !px-2 lg:!px-4"
         >
           {reviews.map((review, idx) => (
             <SwiperSlide key={idx} className="h-auto">
               <motion.div
-                whileHover={{ y: -8 }}
-                className="bg-white p-10 lg:p-12 rounded-[bento] border border-slate-100 shadow-premium hover:shadow-premium-hover transition-all duration-500 h-full flex flex-col group relative"
+                whileHover={{ y: -5 }}
+                className="bg-white p-6 lg:p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500 h-full flex flex-col group relative"
               >
-                {/* Visual Accent */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-transparent via-accent/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                {/* Rating Stars (Silicon Valley Minimalist) */}
-                <div className="flex gap-1.5 mb-8">
+                {/* Rating Stars */}
+                <div className="flex gap-1 mb-6">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      size={14}
+                      size={12}
                       className="text-accent fill-accent"
                     />
                   ))}
                 </div>
 
                 {/* Testimonial Text */}
-                <p className="text-slate-900 font-medium text-lg lg:text-xl mb-10 leading-relaxed flex-grow tracking-tight italic">
+                <p className="text-slate-800 font-semibold text-base lg:text-lg mb-8 leading-snug flex-grow tracking-tight italic">
                   "{review.text}"
                 </p>
 
                 {/* Profil User */}
-                <div className="flex items-center gap-5 mt-auto pt-8 border-t border-slate-100">
-                  <div className="w-14 h-14 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center font-bold text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-sm overflow-hidden">
-                    <span className="text-xl">{review.name.charAt(0)}</span>
+                <div className="flex items-center gap-4 mt-auto pt-6 border-t border-slate-50">
+                  <div className="w-12 h-12 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center font-bold text-primary group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
+                    <span className="text-lg">{review.name.charAt(0)}</span>
                   </div>
-                  <div className="flex flex-col">
-                    <h4 className="font-bold text-primary text-lg tracking-tight">
+                  <div className="flex flex-col text-left">
+                    <h4 className="font-bold text-primary text-base lg:text-lg leading-none mb-1">
                       {review.name}
                     </h4>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.15em] mt-1">
+                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
                       {review.role}
                     </p>
                   </div>
@@ -141,22 +137,20 @@ export default function Testimonials() {
         </Swiper>
       </div>
 
-      {/* Modern Pagination CSS Override */}
       <style>{`
         .swiper-pagination-bullet {
           width: 8px;
           height: 8px;
           background: #cbd5e1;
           opacity: 1;
-          transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
         }
         .swiper-pagination-bullet-active {
-          width: 24px;
+          width: 20px;
           border-radius: 4px;
           background: #FF3B3B !important;
         }
         .swiper-horizontal > .swiper-pagination-bullets.swiper-pagination-bullets-dynamic {
-            bottom: 20px;
+          bottom: 10px;
         }
       `}</style>
     </section>

@@ -1,148 +1,123 @@
-// src/components/DigitalServices.tsx
 import React from "react";
-import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
-  ArrowRight,
-  ChevronRight,
-  Sparkles,
   Target,
   Megaphone,
   Fingerprint,
   Zap,
+  ArrowRight,
+  Sparkles,
 } from "lucide-react";
-import { motion } from "framer-motion";
 
 const services = [
   {
     id: "01",
-    title: "Digital Marketing & Strategy",
-    icon: <Target className="text-accent" size={28} />,
-    desc: "Riset pasar menyeluruh dan perencanaan kampanye jangka panjang yang disesuaikan dengan target sales Anda.",
-    className: "lg:col-span-2", // Bento effect: Card pertama lebih lebar
+    title: "Marketing Strategy",
+    icon: <Target size={22} />,
+    desc: "Riset pasar & rencana sales jangka panjang.",
+    color: "bg-orange-50",
+    iconColor: "text-orange-600",
+    span: "lg:col-span-2",
   },
   {
     id: "02",
-    title: "Digital Advertising",
-    icon: <Megaphone className="text-blue-500" size={28} />,
-    desc: "Mengelola iklan Meta, Google, dan TikTok dengan targeting presisi tinggi untuk ROI yang maksimal.",
-    className: "lg:col-span-1",
+    title: "Digital Ads",
+    icon: <Megaphone size={22} />,
+    desc: "Meta, Google, & TikTok Ads presisi.",
+    color: "bg-blue-50",
+    iconColor: "text-blue-600",
+    span: "lg:col-span-1",
   },
   {
     id: "03",
-    title: "Branding & Identity",
-    icon: <Fingerprint className="text-amber-500" size={28} />,
-    desc: "Membangun karakter brand yang kuat agar selalu diingat, mulai dari positioning hingga panduan visual.",
-    className: "lg:col-span-1",
+    title: "Branding",
+    icon: <Fingerprint size={22} />,
+    desc: "Membangun identitas brand yang kuat.",
+    color: "bg-indigo-50",
+    iconColor: "text-indigo-600",
+    span: "lg:col-span-1",
   },
   {
     id: "04",
-    title: "Promotion & Campaign",
-    icon: <Zap className="text-pink-500" size={28} />,
-    desc: "Eksekusi taktik promosi kreatif dan kolaborasi influencer untuk mendorong lonjakan transaksi.",
-    className: "lg:col-span-2", // Bento effect: Card terakhir lebih lebar
+    title: "Promotion",
+    icon: <Zap size={22} />,
+    desc: "Taktik kreatif & influencer marketing.",
+    color: "bg-pink-50",
+    iconColor: "text-pink-600",
+    span: "lg:col-span-2",
   },
 ];
 
 export default function DigitalServices() {
   return (
-    <section
-      id="services"
-      className="relative py-24 lg:py-36 bg-white overflow-hidden"
-    >
-      <div className="container relative z-10">
-        {/* --- HEADER SECTION --- */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-16 lg:mb-24 gap-8">
-          <div className="max-w-3xl text-center lg:text-left">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 bg-slate-50 border border-slate-200 shadow-sm rounded-full mb-6"
-            >
-              <Sparkles size={14} className="text-accent" />
-              <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em]">
-                Our Services
-              </span>
-            </motion.div>
+    <section className="relative min-h-screen lg:h-screen flex items-center bg-[#F8FAFC] overflow-hidden py-12 lg:py-0 lg:max-h-[900px]">
+      <div className="container px-6 mx-auto">
+        {/* Header - Ringkas & Responsive */}
+        <div className="mb-8 lg:mb-12 text-center lg:text-left">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 rounded-full mb-4 shadow-sm"
+          >
+            <Sparkles size={14} className="text-accent" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">
+              Our Services
+            </span>
+          </motion.div>
 
-            <h2 className="text-4xl md:text-5xl lg:text-7xl font-bold text-primary leading-[1.1] tracking-tighter">
-              Solusi Digital{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-red-400 italic">
+          <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold text-slate-900 leading-[1.1] tracking-tight">
+            Solusi Digital <br className="lg:hidden" />
+            <span className="relative inline-block">
+              <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-orange-400 italic">
                 End-to-End.
               </span>
-            </h2>
-          </div>
-
-          <Link
-            to="/services"
-            className="group hidden lg:inline-flex items-center gap-4 text-[12px] font-bold uppercase tracking-[0.2em] text-primary hover:text-accent transition-all"
-          >
-            Lihat Detail Layanan
-            <div className="w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all duration-300 shadow-sm">
-              <ChevronRight size={20} />
-            </div>
-          </Link>
+              <div className="absolute -bottom-1 left-0 w-full h-2 bg-accent/10 -z-10 rounded-full" />
+            </span>
+          </h2>
         </div>
 
-        {/* --- BENTO GRID SYSTEM --- */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services.map((service, index) => (
+        {/* Bento Grid - Mobile & Desktop Optimized */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
+          {services.map((s, i) => (
             <motion.div
-              key={service.id}
+              key={s.id}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{
-                delay: index * 0.1,
-                duration: 0.6,
-                ease: [0.2, 0, 0, 1],
-              }}
-              className={`group relative bg-white rounded-[bento] p-8 md:p-10 border border-slate-100 shadow-premium hover:shadow-premium-hover transition-all duration-500 flex flex-col h-full overflow-hidden ${service.className}`}
+              transition={{ delay: i * 0.1 }}
+              className={`group relative p-6 lg:p-8 rounded-[2rem] border border-slate-200 bg-white hover:shadow-xl transition-all duration-500 ${s.span}`}
             >
-              {/* Animated Background Glow */}
-              <div className="absolute -right-10 -top-10 w-32 h-32 bg-slate-50 rounded-full group-hover:bg-accent/5 transition-colors duration-700 -z-10" />
-
-              <div className="relative z-10 flex flex-col h-full">
-                {/* Card Header: Icon & ID */}
-                <div className="flex items-start justify-between mb-10">
-                  <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center border border-slate-100 group-hover:scale-110 group-hover:bg-white group-hover:shadow-md transition-all duration-500">
-                    {service.icon}
+              <div className="flex flex-col h-full">
+                <div className="flex justify-between items-start mb-6 lg:mb-8">
+                  <div
+                    className={`w-11 h-11 lg:w-12 lg:h-12 rounded-xl ${s.color} ${s.iconColor} flex items-center justify-center transition-transform group-hover:scale-110`}
+                  >
+                    {s.icon}
                   </div>
-                  <span className="text-5xl font-bold text-slate-50 group-hover:text-accent/10 transition-colors duration-500">
-                    {service.id}
+                  <span className="text-3xl lg:text-4xl font-black text-slate-100 group-hover:text-slate-200/50 transition-colors">
+                    {s.id}
                   </span>
                 </div>
 
-                <h3 className="text-2xl lg:text-3xl font-bold text-primary mb-4 tracking-tight group-hover:text-accent transition-colors duration-300 leading-tight">
-                  {service.title}
+                <h3 className="text-xl lg:text-2xl font-bold text-slate-900 mb-2 group-hover:text-accent transition-colors">
+                  {s.title}
                 </h3>
 
-                <p className="text-slate-500 text-base lg:text-lg leading-relaxed mb-10 flex-grow font-medium">
-                  {service.desc}
+                <p className="text-slate-500 text-sm leading-relaxed mb-6 flex-grow font-medium">
+                  {s.desc}
                 </p>
 
-                {/* Footer Action */}
-                <div className="pt-8 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] group-hover:text-accent transition-colors">
-                    Explore Service
-                  </span>
-                  <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                    <ArrowRight size={18} />
-                  </div>
+                <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 group-hover:text-accent transition-all">
+                  Details
+                  <ArrowRight
+                    size={14}
+                    className="group-hover:translate-x-1 transition-transform"
+                  />
                 </div>
               </div>
             </motion.div>
           ))}
-        </div>
-
-        {/* --- MOBILE FOOTER --- */}
-        <div className="mt-12 lg:hidden px-4">
-          <Link
-            to="/services"
-            className="btn-primary flex items-center justify-center gap-3 w-full py-5 rounded-[2rem] shadow-accent-glow"
-          >
-            Jelajahi Semua Layanan <ArrowRight size={18} />
-          </Link>
         </div>
       </div>
     </section>

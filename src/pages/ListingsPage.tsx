@@ -6,219 +6,213 @@ import {
   ArrowLeft,
   X,
   Filter,
-  LayoutGrid,
-  MapPin,
-  TrendingUp,
   RotateCcw,
+  SlidersHorizontal,
+  ChevronDown,
+  LayoutGrid,
 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import PropertyCard from "../components/PropertyCard";
 import Pagination from "../components/Pagination";
 import { supabase } from "../utils/supabase";
 import { motion, AnimatePresence } from "framer-motion";
-import { formatHarga } from "../utils/idr";
 
 const ITEMS_PER_PAGE = 9;
 
-// ==== Hook Debounce ====
-const useDebounce = <T,>(value: T, delay: number): T => {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-  useEffect(() => {
-    const handler = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(handler);
-  }, [value, delay]);
-  return debouncedValue;
-};
-
-// ==== Komponen Skeleton Modern ====
-const PropertyCardSkeleton = () => (
-  <div className="bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden animate-pulse">
-    <div className="aspect-[4/3] bg-slate-100"></div>
-    <div className="p-8 space-y-4">
-      <div className="h-3 bg-slate-100 rounded w-1/4"></div>
-      <div className="h-6 bg-slate-100 rounded w-3/4"></div>
-      <div className="h-4 bg-slate-100 rounded w-1/2"></div>
-      <div className="pt-6 border-t border-slate-50 flex justify-between">
-        <div className="h-6 bg-slate-100 rounded w-24"></div>
-        <div className="h-8 w-8 bg-slate-100 rounded-full"></div>
-      </div>
-    </div>
-  </div>
-);
-
-export default function ListingsPage() {
+// ==== OPTIMASI: Custom Hook untuk URL Logic (Clean Architecture) ====
+const usePropertyFilters = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // State Filter disesuaikan dengan Skema SQL Baru
-  const [filters, setFilters] = useState({
-    term: searchParams.get("search") || "",
-    status: searchParams.get("status") || "active",
-    type: searchParams.get("type") || "All", // jual / sewa
-    category: searchParams.get("category") || "All", // property_type
-    sort: searchParams.get("sort") || "created_at-desc",
-    minPrice: searchParams.get("minPrice") || "",
-    maxPrice: searchParams.get("maxPrice") || "",
-  });
-
-  const [currentPage, setCurrentPage] = useState(
-    parseInt(searchParams.get("page") || "1", 10),
+  const currentFilters = useMemo(
+    () => ({
+      term: searchParams.get("search") || "",
+      status: searchParams.get("status") || "active",
+      type: searchParams.get("type") || "All",
+      category: searchParams.get("category") || "All",
+      sort: searchParams.get("sort") || "created_at-desc",
+      minPrice: searchParams.get("minPrice") || "",
+      maxPrice: searchParams.get("maxPrice") || "",
+      page: parseInt(searchParams.get("page") || "1", 10),
+    }),
+    [searchParams],
   );
+
+  const updateFilters = (updates: Record<string, string | number>) => {
+    const newParams = new URLSearchParams(searchParams);
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === "All" || value === "" || (key === "page" && value === 1)) {
+        newParams.delete(key);
+      } else {
+        newParams.set(key, value.toString());
+      }
+    });
+    setSearchParams(newParams);
+  };
+
+  return { currentFilters, updateFilters };
+};
+
+export default function ListingsPage() {
+  const { currentFilters, updateFilters } = usePropertyFilters();
   const [properties, setProperties] = useState<any[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
+  const [localSearch, setLocalSearch] = useState(currentFilters.term);
 
-  const debouncedSearchTerm = useDebounce(filters.term, 500);
-
-  // FETCH DATA DENGAN FULL TEXT SEARCH (search_vector)
+  // FETCH DATA: Dengan Optimasi Postgres Search Vector
   useEffect(() => {
     const fetchProperties = async () => {
       setLoading(true);
-      const from = (currentPage - 1) * ITEMS_PER_PAGE;
+      const from = (currentFilters.page - 1) * ITEMS_PER_PAGE;
       const to = from + ITEMS_PER_PAGE - 1;
-      const [sortField, sortOrder] = filters.sort.split("-");
+      const [sortField, sortOrder] = currentFilters.sort.split("-");
 
-      // Menarik data beserta gambar primer
       let query = supabase
         .from("properties")
         .select(`*, property_images(image_url)`, { count: "exact" });
 
-      // 1. Integrasi Search Vector (Postgres Full Text Search)
-      if (debouncedSearchTerm) {
-        query = query.textSearch("search_vector", debouncedSearchTerm, {
+      // Search Logic
+      if (currentFilters.term) {
+        query = query.textSearch("search_vector", currentFilters.term, {
           config: "simple",
           type: "websearch",
         });
       }
 
-      // 2. Filter Berdasarkan Skema Kolom Baru
-      if (filters.status !== "All") query = query.eq("status", filters.status);
-      if (filters.type !== "All")
-        query = query.eq("listing_type", filters.type);
-      if (filters.category !== "All")
-        query = query.eq("property_type", filters.category);
-      if (filters.minPrice)
-        query = query.gte("price", parseInt(filters.minPrice));
-      if (filters.maxPrice)
-        query = query.lte("price", parseInt(filters.maxPrice));
+      // Categorical Filters
+      if (currentFilters.status !== "All")
+        query = query.eq("status", currentFilters.status);
+      if (currentFilters.type !== "All")
+        query = query.eq("listing_type", currentFilters.type);
+      if (currentFilters.category !== "All")
+        query = query.eq("property_type", currentFilters.category);
+      if (currentFilters.minPrice)
+        query = query.gte("price", currentFilters.minPrice);
+      if (currentFilters.maxPrice)
+        query = query.lte("price", currentFilters.maxPrice);
 
-      // 3. Sorting & Pagination
       query = query
         .order(sortField, { ascending: sortOrder === "asc" })
         .range(from, to);
 
-      try {
-        const { data, error, count } = await query;
-        if (error) throw error;
+      const { data, count, error } = await query;
+      if (!error) {
         setProperties(data || []);
         setTotalCount(count || 0);
-      } catch (error) {
-        console.error("Fetch error:", error);
-      } finally {
-        setLoading(false);
       }
+      setLoading(false);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     };
+
     fetchProperties();
-  }, [currentPage, debouncedSearchTerm, filters]);
+  }, [currentFilters]);
 
-  // Sync URL Params
+  // Debounced Search Handler
   useEffect(() => {
-    const newParams = new URLSearchParams();
-    if (debouncedSearchTerm) newParams.set("search", debouncedSearchTerm);
-    if (filters.type !== "All") newParams.set("type", filters.type);
-    if (filters.category !== "All") newParams.set("category", filters.category);
-    if (currentPage > 1) newParams.set("page", currentPage.toString());
-    setSearchParams(newParams);
-  }, [debouncedSearchTerm, filters, currentPage, setSearchParams]);
-
-  const handleFilterChange = useCallback(
-    (key: keyof typeof filters, value: string) => {
-      setFilters((prev) => ({ ...prev, [key]: value }));
-      setCurrentPage(1);
-    },
-    [],
-  );
-
-  const handleResetFilters = useCallback(() => {
-    setFilters({
-      term: "",
-      status: "active",
-      type: "All",
-      category: "All",
-      sort: "created_at-desc",
-      minPrice: "",
-      maxPrice: "",
-    });
-    setCurrentPage(1);
-  }, []);
+    const timer = setTimeout(() => {
+      if (localSearch !== currentFilters.term) {
+        updateFilters({ search: localSearch, page: 1 });
+      }
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [localSearch]);
 
   return (
-    <div className="bg-neutral-soft min-h-screen">
+    <div className="bg-slate-50/50 min-h-screen font-sans">
       <Helmet>
-        <title>Katalog Properti Eksklusif | OmzetNaik.id Agency</title>
+        <title>
+          {currentFilters.term
+            ? `Hasil Cari: ${currentFilters.term}`
+            : "Katalog Properti"}{" "}
+          | OmzetNaik.id
+        </title>
         <meta
           name="description"
-          content="Cari properti investasi terbaik di Yogyakarta. Listing terverifikasi dengan ROI tinggi."
+          content="Temukan properti investasi pilihan dengan legalitas terjamin di Yogyakarta."
         />
       </Helmet>
 
-      {/* --- HERO HEADER --- */}
-      <div className="bg-white border-b border-border pt-32 pb-16">
+      {/* --- PREMIUM HEADER --- */}
+      <header className="bg-white border-b border-slate-100 pt-32 pb-12">
         <div className="container mx-auto px-6">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-slate-400 hover:text-primary font-bold text-xs uppercase tracking-widest mb-8 transition-all"
+            className="inline-flex items-center gap-2 text-slate-400 hover:text-primary font-bold text-[10px] uppercase tracking-[0.2em] mb-8 transition-all group"
           >
-            <ArrowLeft size={16} /> Kembali ke Beranda
+            <ArrowLeft
+              size={14}
+              className="group-hover:-translate-x-1 transition-transform"
+            />{" "}
+            Back to Home
           </Link>
-          <div className="max-w-3xl">
-            <h1 className="text-5xl md:text-7xl font-heading font-extrabold text-primary mb-6 leading-tight">
-              Katalog{" "}
-              <span className="text-accent italic font-medium">Investasi</span>{" "}
-              Properti.
-            </h1>
-            <p className="text-slate-500 text-lg md:text-xl leading-relaxed font-sans">
-              Menampilkan {totalCount} unit pilihan yang telah melalui proses
-              kurasi ketat untuk memastikan keamanan legalitas dan potensi
-              profit masa depan.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <section className="py-16">
-        <div className="container mx-auto px-6">
-          {/* --- SEARCH & FILTER BAR --- */}
-          <div className="sticky top-24 z-40 mb-12">
-            <div className="bg-white/90 backdrop-blur-xl border border-white p-3 rounded-[2.5rem] shadow-2xl shadow-primary/5 flex flex-col md:flex-row gap-4 items-center">
-              <div className="relative w-full flex-grow">
-                <Search
-                  size={18}
-                  className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400"
-                />
-                <input
-                  type="text"
-                  placeholder="Cari lokasi, nama proyek, atau spesifikasi..."
-                  value={filters.term}
-                  onChange={(e) => handleFilterChange("term", e.target.value)}
-                  className="w-full pl-14 pr-6 py-5 bg-neutral-soft border-none rounded-3xl text-sm focus:ring-2 focus:ring-primary transition-all font-medium"
-                />
-              </div>
-
-              <div className="flex w-full md:w-auto gap-3">
-                <button
-                  onClick={() => setShowFilters(true)}
-                  className="flex-grow md:flex-initial flex items-center justify-center gap-3 px-10 py-5 bg-primary text-white rounded-3xl font-bold text-sm hover:bg-secondary transition-all shadow-lg shadow-primary/20"
-                >
-                  <Filter size={18} className="text-accent" />
-                  <span>Filter</span>
-                </button>
-              </div>
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+            <div className="max-w-2xl">
+              <h1 className="text-5xl lg:text-6xl font-bold text-primary tracking-tighter leading-[0.9]">
+                Investment{" "}
+                <span className="text-accent italic font-medium">Assets.</span>
+              </h1>
+              <p className="text-slate-500 text-lg mt-6 leading-relaxed max-w-xl font-medium">
+                Menampilkan{" "}
+                <span className="text-primary font-bold">
+                  {totalCount} unit
+                </span>{" "}
+                pilihan yang siap mengakselerasi portofolio Anda.
+              </p>
+            </div>
+            {/* Quick Sorting Dropdown */}
+            <div className="relative group min-w-[200px]">
+              <select
+                value={currentFilters.sort}
+                onChange={(e) =>
+                  updateFilters({ sort: e.target.value, page: 1 })
+                }
+                className="w-full pl-4 pr-10 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold text-primary appearance-none cursor-pointer focus:ring-2 focus:ring-primary/5 transition-all"
+              >
+                <option value="created_at-desc">Listing Terbaru</option>
+                <option value="price-asc">Harga Terendah</option>
+                <option value="price-desc">Harga Tertinggi</option>
+              </select>
+              <ChevronDown
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                size={14}
+              />
             </div>
           </div>
+        </div>
+      </header>
 
-          {/* --- GRID LISTING --- */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+      {/* --- SEARCH & FLOATING FILTERS --- */}
+      <section className="sticky top-20 z-30 py-6 -mt-8">
+        <div className="container mx-auto px-6">
+          <div className="bg-white/80 backdrop-blur-2xl border border-white p-2 rounded-[2rem] shadow-premium flex flex-col md:flex-row gap-2">
+            <div className="relative flex-grow group">
+              <Search
+                size={18}
+                className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-accent transition-colors"
+              />
+              <input
+                type="text"
+                placeholder="Cari lokasi, nama proyek, atau tipe properti..."
+                value={localSearch}
+                onChange={(e) => setLocalSearch(e.target.value)}
+                className="w-full pl-14 pr-6 py-4 bg-slate-50/50 border-none rounded-[1.5rem] text-sm font-bold placeholder:text-slate-300 focus:ring-0"
+              />
+            </div>
+            <button
+              onClick={() => setShowFilters(true)}
+              className="px-8 py-4 bg-primary text-white rounded-[1.5rem] font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-primary/95 transition-all shadow-lg shadow-primary/10 active:scale-95"
+            >
+              <SlidersHorizontal size={16} /> Advanced Filter
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* --- LISTING GRID --- */}
+      <main className="py-12">
+        <div className="container mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {loading ? (
               Array.from({ length: 6 }).map((_, i) => (
                 <PropertyCardSkeleton key={i} />
@@ -226,148 +220,171 @@ export default function ListingsPage() {
             ) : properties.length > 0 ? (
               properties.map((p) => <PropertyCard key={p.id} property={p} />)
             ) : (
-              <div className="col-span-full py-40 text-center bg-white rounded-[3rem] border border-border">
-                <RotateCcw size={48} className="mx-auto text-slate-200 mb-6" />
-                <h3 className="text-2xl font-heading font-bold text-primary mb-2">
-                  Listing Tidak Ditemukan
-                </h3>
-                <p className="text-slate-500 mb-10 font-sans">
-                  Coba ubah kata kunci atau reset filter pencarian Anda.
-                </p>
-                <button
-                  onClick={handleResetFilters}
-                  className="btn-primary px-10 py-4"
-                >
-                  Reset Pencarian
-                </button>
-              </div>
+              <EmptyState
+                onReset={() =>
+                  updateFilters({
+                    search: "",
+                    type: "All",
+                    category: "All",
+                    page: 1,
+                  })
+                }
+              />
             )}
           </div>
 
-          {/* --- PAGINATION --- */}
+          {/* PAGINATION */}
           {!loading && totalCount > ITEMS_PER_PAGE && (
-            <div className="mt-24 border-t border-border pt-12 flex justify-center">
+            <div className="mt-20 flex justify-center border-t border-slate-100 pt-12">
               <Pagination
-                currentPage={currentPage}
+                currentPage={currentFilters.page}
                 totalCount={totalCount}
                 pageSize={ITEMS_PER_PAGE}
-                onPageChange={setCurrentPage}
+                onPageChange={(page) => updateFilters({ page })}
               />
             </div>
           )}
         </div>
-      </section>
+      </main>
 
-      {/* --- FILTER SLIDE OVER (MODAL) --- */}
+      {/* --- FILTER DRAWER (MODERN SIDEBAR) --- */}
       <AnimatePresence>
         {showFilters && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowFilters(false)}
-              className="fixed inset-0 z-[100] bg-primary/40 backdrop-blur-md"
-            />
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              className="fixed inset-y-0 right-0 z-[110] w-full max-w-md bg-white shadow-2xl flex flex-col"
-            >
-              <div className="p-10 border-b border-border flex justify-between items-center bg-neutral-soft/50">
-                <h2 className="text-2xl font-heading font-extrabold text-primary">
-                  Filter Properti
-                </h2>
-                <button
-                  onClick={() => setShowFilters(false)}
-                  className="p-2 hover:bg-white rounded-full transition-all shadow-sm"
-                >
-                  <X size={24} />
-                </button>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-10 space-y-10">
-                {/* Tipe Listing */}
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-5 block">
-                    Tipe Penawaran
-                  </label>
-                  <div className="grid grid-cols-2 gap-3">
-                    {["All", "jual", "sewa"].map((t) => (
-                      <button
-                        key={t}
-                        onClick={() => handleFilterChange("type", t)}
-                        className={`py-4 rounded-2xl text-sm font-bold border transition-all ${filters.type === t ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" : "bg-white text-slate-500 border-border hover:border-primary"}`}
-                      >
-                        {t === "All" ? "Semua" : t.toUpperCase()}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Range Harga */}
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-5 block">
-                    Budget (IDR)
-                  </label>
-                  <div className="space-y-4">
-                    <input
-                      type="number"
-                      placeholder="Harga Minimum"
-                      value={filters.minPrice}
-                      onChange={(e) =>
-                        handleFilterChange("minPrice", e.target.value)
-                      }
-                      className="w-full p-5 bg-neutral-soft rounded-2xl text-sm focus:ring-2 focus:ring-primary outline-none"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Harga Maksimum"
-                      value={filters.maxPrice}
-                      onChange={(e) =>
-                        handleFilterChange("maxPrice", e.target.value)
-                      }
-                      className="w-full p-5 bg-neutral-soft rounded-2xl text-sm focus:ring-2 focus:ring-primary outline-none"
-                    />
-                  </div>
-                </div>
-
-                {/* Urutan */}
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-5 block">
-                    Urutkan Berdasarkan
-                  </label>
-                  <select
-                    value={filters.sort}
-                    onChange={(e) => handleFilterChange("sort", e.target.value)}
-                    className="w-full p-5 bg-neutral-soft rounded-2xl text-sm font-bold text-primary outline-none appearance-none cursor-pointer"
-                  >
-                    <option value="created_at-desc">Listing Terbaru</option>
-                    <option value="price-asc">Harga Terendah</option>
-                    <option value="price-desc">Harga Tertinggi</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="p-10 border-t border-border bg-neutral-soft/30 flex gap-4">
-                <button
-                  onClick={handleResetFilters}
-                  className="flex-1 py-5 font-bold text-slate-400 hover:text-primary transition-colors uppercase text-xs tracking-widest"
-                >
-                  Reset
-                </button>
-                <button
-                  onClick={() => setShowFilters(false)}
-                  className="flex-[2] btn-primary py-5 text-sm"
-                >
-                  Terapkan Filter
-                </button>
-              </div>
-            </motion.div>
-          </>
+          <FilterDrawer
+            filters={currentFilters}
+            onClose={() => setShowFilters(false)}
+            onApply={(updates) => {
+              updateFilters({ ...updates, page: 1 });
+              setShowFilters(false);
+            }}
+          />
         )}
       </AnimatePresence>
     </div>
   );
 }
+
+// ==== SUB-COMPONENTS (Clean Code) ====
+
+const FilterDrawer = ({ filters, onClose, onApply }: any) => (
+  <>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+      className="fixed inset-0 z-[100] bg-primary/40 backdrop-blur-sm"
+    />
+    <motion.div
+      initial={{ x: "100%" }}
+      animate={{ x: 0 }}
+      exit={{ x: "100%" }}
+      transition={{ type: "spring", damping: 25, stiffness: 200 }}
+      className="fixed inset-y-0 right-0 z-[110] w-full max-w-md bg-white shadow-2xl flex flex-col"
+    >
+      <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <div>
+          <h2 className="text-2xl font-bold text-primary tracking-tighter">
+            Filter Criteria
+          </h2>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+            Refine your asset discovery
+          </p>
+        </div>
+        <button
+          onClick={onClose}
+          className="p-3 bg-white border border-slate-100 rounded-full hover:bg-slate-50 transition-all shadow-sm"
+        >
+          <X size={20} />
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-8 space-y-10 no-scrollbar">
+        {/* Filter Section: Listing Type */}
+        <FilterSection label="Tipe Penawaran">
+          <div className="grid grid-cols-2 gap-2">
+            {["All", "jual", "sewa"].map((t) => (
+              <button
+                key={t}
+                onClick={() => onApply({ type: t })}
+                className={`py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest border transition-all ${filters.type === t ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" : "bg-white text-slate-400 border-slate-100 hover:border-primary"}`}
+              >
+                {t === "All" ? "Semua" : t}
+              </button>
+            ))}
+          </div>
+        </FilterSection>
+
+        {/* Price Range Section */}
+        <FilterSection label="Range Budget (IDR)">
+          <div className="grid grid-cols-2 gap-3">
+            <input
+              type="number"
+              placeholder="Min Price"
+              value={filters.minPrice}
+              onChange={(e) => onApply({ minPrice: e.target.value })}
+              className="w-full p-4 bg-slate-50 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-primary/5 transition-all border-none"
+            />
+            <input
+              type="number"
+              placeholder="Max Price"
+              value={filters.maxPrice}
+              onChange={(e) => onApply({ maxPrice: e.target.value })}
+              className="w-full p-4 bg-slate-50 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-primary/5 transition-all border-none"
+            />
+          </div>
+        </FilterSection>
+      </div>
+
+      <div className="p-8 border-t border-slate-100 bg-slate-50/50">
+        <button
+          onClick={onClose}
+          className="w-full py-4 bg-primary text-white rounded-2xl font-bold text-sm shadow-xl shadow-primary/10 active:scale-95 transition-all"
+        >
+          Show Results
+        </button>
+      </div>
+    </motion.div>
+  </>
+);
+
+const FilterSection = ({ label, children }: any) => (
+  <div className="space-y-4">
+    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">
+      {label}
+    </label>
+    {children}
+  </div>
+);
+
+const PropertyCardSkeleton = () => (
+  <div className="bg-white rounded-[2.5rem] border border-slate-50 overflow-hidden animate-pulse">
+    <div className="aspect-[4/3] bg-slate-100" />
+    <div className="p-8 space-y-4">
+      <div className="h-2 bg-slate-100 rounded w-1/4" />
+      <div className="h-6 bg-slate-100 rounded w-3/4" />
+      <div className="h-4 bg-slate-100 rounded w-1/2" />
+    </div>
+  </div>
+);
+
+const EmptyState = ({ onReset }: any) => (
+  <div className="col-span-full py-32 text-center bg-white rounded-[3rem] border border-dashed border-slate-200">
+    <RotateCcw
+      size={48}
+      className="mx-auto text-slate-200 mb-6 animate-spin-slow"
+    />
+    <h3 className="text-2xl font-bold text-primary tracking-tight">
+      Listing Tidak Ditemukan
+    </h3>
+    <p className="text-slate-400 font-medium mt-2 mb-8">
+      Maaf, aset dengan kriteria tersebut belum tersedia saat ini.
+    </p>
+    <button
+      onClick={onReset}
+      className="px-10 py-4 bg-slate-100 text-primary rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-primary hover:text-white transition-all"
+    >
+      Reset Semua Parameter
+    </button>
+  </div>
+);
